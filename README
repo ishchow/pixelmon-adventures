@@ -1,0 +1,15 @@
+Authors:
+  Ishaat Chowdhury                Section: EA1
+  Sam Wu                          Section: EA2
+
+Accesories:
+* Arduino Mega 2560
+
+Wiring Instructions:
+
+How to run code:
+  In the directory where you extract the code run the following commands:
+  make
+  make upload
+
+Miscellaneous Information:
