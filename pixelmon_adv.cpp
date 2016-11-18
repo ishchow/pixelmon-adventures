@@ -16,7 +16,7 @@ Description:
 #include <SD.h>
 
 #include "lcd_image.h"
-#include <avr/pgmspace.h>
+#include <avr/pgmspace.h> // For PROGMEM
 
 // Display pins:
 // standard U of A library settings, assuming Atmel Mega SPI pins
@@ -34,6 +34,9 @@ Description:
 
 // #define MILLIS_PER_FRAME 50 // 20fps
 // #define STEPS_PER_PIXEL 64
+
+#define TFT_WIDTH 128
+#define TFT_HEIGHT 160
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 Sd2Card card;
@@ -74,6 +77,9 @@ const unsigned char bulb [] PROGMEM = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
+const int BULB_WIDTH = 64;
+const int BULB_HEIGHT = 64;
+
 void setup() {
     init();
     Serial.begin(9600);
@@ -86,17 +92,31 @@ void setup() {
 
     tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, green tab
     tft.fillScreen(ST7735_BLACK);
-    tft.print("I am bulbosaur!\n");
+    // tft.print("I am bulbosaur!\n");
 
     Serial.println("OK!");
 }
 
 int main() {
     setup();
-    tft.drawBitmap(0, 0, bulb, 64, 64, ST7735_WHITE);
 
+    // Animation to move back and forth
+    uint8_t direction = 1; // 1: fwd, -1: reverse
+    int x = 0;
+    int lastx = 0;
+    const int MOVE_SPEED = 5;
     while (true) {
+        if (x == 0) direction = 1;
+        else if (x == TFT_WIDTH - BULB_WIDTH) direction = -1;
 
+        if (x != lastx) {
+            tft.fillRect(lastx, 0, BULB_WIDTH, BULB_HEIGHT, ST7735_BLACK);
+            tft.drawBitmap(x, 0, bulb, BULB_WIDTH, BULB_HEIGHT, ST7735_WHITE);
+            lastx = x;
+        }
+
+        if (direction == 1) x = constrain(x + MOVE_SPEED, 0, TFT_WIDTH - BULB_WIDTH);
+        else  x = constrain(x - MOVE_SPEED, 0, TFT_WIDTH - BULB_WIDTH);
     }
 
     Serial.end();
