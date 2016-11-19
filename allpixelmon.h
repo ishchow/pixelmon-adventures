@@ -24,6 +24,8 @@ typedef struct {
     int xp;
 } pixelmon;
 
+const int NUM_PIXELMON_TYPES = 2;
+
 void loadAllPixelmon();
 
 #endif
