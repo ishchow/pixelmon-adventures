@@ -42,8 +42,9 @@ Description:
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 Sd2Card card;
 
-extern pixelmon_type allPixelmon[];
 // extern const int NUM_PIXELMON_TYPES;
+extern pixelmon_type allPixelmon[];
+
 const int MAX_OWNED = 6;
 pixelmon ownedPixelmon[MAX_OWNED];
 
@@ -67,8 +68,14 @@ bool pixelmonEqual(pixelmon *px1, pixelmon *px2) {
 	else return true;
 }
 
-void execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
-	victim->health -= allPixelmon[attacker->pixelmon_id].attacks[attack_id].dmg;
+bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
+	int prev_health = victim->health;
+	int hit_probability = random(0, 101);
+	if (hit_probability > 25) {
+		victim->health -= allPixelmon[attacker->pixelmon_id].attacks[attack_id].dmg;
+	}
+	if (victim->health < prev_health) return true;
+	else return false;
 }
 
 void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint16_t bmp_color, uint16_t bg_color) {
@@ -78,17 +85,102 @@ void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint1
 	drawPixelmon(injured, injured_x, injured_y, bmp_color);
 }
 
-void deathAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint16_t bg_color) {
-	drawPixelmon(injured, injured_x, injured_y, ST7735_RED);
-	erasePixelmon(injured, injured_x, injured_y, bg_color);
+void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16_t bg_color) {
+	drawPixelmon(killed, killed_x, killed_y, ST7735_RED);
+	erasePixelmon(killed, killed_x, killed_y, bg_color);
 	delay(500);
 }
 
 // TODO: Finish function
-void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color, uint16_t bg_color, uint8_t screen_side) {
-	// screen_side: -1 (Left), 1 (Right)
+void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
+					uint16_t bg_color, bool isPlayer)
+{
+	int start_x = x;
+	int last_x = x;
 	const int DODGE_LENGTH = 10;
+	const int MOVE_SPEED = 2;
+	int direction = 1;  // Direction relative to pokemon
+						// Forward: 1, Reverse: -1
+
+	if (isPlayer) {
+		while (true) {
+			if (direction == 1) x = constrain(x+MOVE_SPEED, start_x, start_x + DODGE_LENGTH);
+			else if (direction == -1) x = constrain(x-MOVE_SPEED, start_x, start_x + DODGE_LENGTH);
+
+			if (x != last_x) {
+				erasePixelmon(px, last_x, y, ST7735_BLACK);
+				delay(50);
+				drawPixelmon(px, x, y, ST7735_WHITE);
+				last_x = x;
+			}
+
+			if (x == start_x + DODGE_LENGTH) direction = -1;
+			if (x == start_x && direction == -1) break;
+		}
+	} else {
+		while (true) {
+			if (direction == 1) x = constrain(x-MOVE_SPEED, start_x - DODGE_LENGTH, start_x);
+			else if (direction == -1) x = constrain(x+MOVE_SPEED, start_x - DODGE_LENGTH, start_x);
+
+			if (x != last_x) {
+				erasePixelmon(px, last_x, y, ST7735_BLACK);
+				delay(50);
+				drawPixelmon(px, x, y, ST7735_WHITE);
+				last_x = x;
+			}
+
+			if (x == start_x - DODGE_LENGTH) direction = -1;
+			if (x == start_x && direction == -1) break;
+		}
+	}
 	delay(500);
+}
+
+void generatePixelmon(pixelmon *px) {
+		px->pixelmon_id = random(2);
+		px->health = random(75, 100);
+		px->level = random(1, 11);
+		px->xp = 0;
+}
+
+void battleMode(pixelmon *player, pixelmon *wild) {
+	int player_x = 0, player_y = 32;
+	int wild_x = (TFT_WIDTH - 1) - 32, wild_y = 0;
+	drawPixelmon(player, player_x, player_y, ST7735_WHITE);
+	drawPixelmon(wild, wild_x, wild_y, ST7735_WHITE);
+
+	bool playerTurn = true;
+	while (player->health > 0 && wild->health > 0) {
+		int attack_id = random(4);
+		if (playerTurn) { // Player
+			Serial.print("Player attacks with: ");
+			Serial.println(allPixelmon[player->pixelmon_id].attacks[attack_id].name);
+			Serial.println();
+			bool wild_hit = execAttack(player, wild, attack_id);
+			if (wild_hit) hitAnimation(wild, wild_x, wild_y, ST7735_WHITE, ST7735_BLACK);
+			else dodgeAnimation(wild, wild_x, wild_y, ST7735_WHITE, ST7735_BLACK, false);
+			playerTurn = false;
+			delay(500);
+		} else { // Wild Pokemon
+			Serial.print("Wild attacks with: ");
+			Serial.println(allPixelmon[wild->pixelmon_id].attacks[attack_id].name);
+			Serial.println();
+			bool player_hit = execAttack(wild, player, attack_id);
+			if (player_hit) hitAnimation(player, player_x, player_y, ST7735_WHITE, ST7735_BLACK);
+			else dodgeAnimation(player, player_x, player_y, ST7735_WHITE, ST7735_BLACK, true);
+			playerTurn = true;
+			// delay(500);
+		}
+
+		if (wild->health < 0) {
+			Serial.println("Winner: "); Serial.println("Player\n");
+			deathAnimation(wild, wild_x, wild_y, ST7735_BLACK);
+		} else if (player->health < 0) {
+			Serial.println("Winner: "); Serial.println("Wild\n");
+			deathAnimation(player, player_x, player_y, ST7735_BLACK);
+		}
+	}
+
 }
 
 void setup() {
@@ -138,33 +230,24 @@ int main() {
 	// 	Serial.println();
 	// }
 
-	pixelmon s = {0, 100, 50, 0}; // Yours
-	pixelmon b = {1, 100, 50, 0}; // Wild
+	pixelmon pl; // Player
+	generatePixelmon(&pl);
+	pixelmon wd; // Wild
+	generatePixelmon(&wd);
+	battleMode(&pl, &wd);
 
-	drawPixelmon(&s, 0, 32, ST7735_WHITE);
-	drawPixelmon(&b, TFT_WIDTH - 32, 0, ST7735_WHITE);
+	// pixelmon px;
+	// generatePixelmon(&px);
+	// int player_x = 0, player_y = 32;
+	// int wild_x = (TFT_WIDTH - 1) - 32, wild_y = 0;
 
-	hitAnimation(&s, 0, 32, ST7735_WHITE, ST7735_BLACK);
+	// drawPixelmon(&px, player_x, player_y, ST7735_WHITE);
+	// dodgeAnimation(&px, player_x, player_y, ST7735_WHITE, ST7735_BLACK, true);
 
-	// int turn = 1;
-	// while (s.health > 0 && b.health > 0) {
-	// 	int turn_id = random(4);
-	// 	if (turn == 1) { // Player
-	// 		execAttack(&s, &b, turn_id);
-	// 		turn = 2;
-	// 	} else { // Wild Pokemon
-	// 		execAttack(&b, &s, turn_id);
-	// 		turn = 1;
-	// 	}
-	//
-	// 	if (s.health < 0) {
-	// 		Serial.println("Winner: "); Serial.println(allPixelmon[b.pixelmon_id].name);
-	// 		Serial.println();
-	// 	} else if (b.health < 0) {
-	// 		Serial.println("Winner: "); Serial.println(allPixelmon[s.pixelmon_id].name);
-	// 		Serial.println();
-	// 	}
-	// }
+	// drawPixelmon(&px, wild_x, wild_y, ST7735_WHITE);
+	// dodgeAnimation(&px, wild_x, wild_y, ST7735_WHITE, ST7735_BLACK, false);
+
+	while (true) {}
 
     Serial.end();
     return 0;
