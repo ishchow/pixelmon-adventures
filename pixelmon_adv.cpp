@@ -265,12 +265,14 @@ void updateMoveStats(pixelmon *player_pxm, int selected_attack) {
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 
 	tft.setCursor(6*5, 33 + 6*7 + 1);
-	tft.fillRect(6*5, 33 + 6*7 + 1, (TFT_WIDTH/2) - 6*5, 7, ST7735_BLACK);
+	// Clear previous text
+	tft.fillRect(6*5, 33 + 6*7 + 1, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK);
 	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].dmg);
 
 
-	tft.setCursor(TFT_WIDTH/2, 33 + 6*7 + 1);
-	tft.fillRect((TFT_WIDTH/2) + 6*5, 33 + 6*7 + 1, (TFT_WIDTH-1) - ((TFT_WIDTH/2) + 6*5), 7, ST7735_BLACK);
+	tft.setCursor(TFT_WIDTH/2 + 6*5, 33 + 6*7 + 1);
+	// Clear previous text
+	tft.fillRect(TFT_WIDTH/2 + 6*5, 33 + 6*7 + 1, (TFT_WIDTH-1) - TFT_WIDTH/2 + 6*5, 7, ST7735_BLACK);
 	tft.print(75);
 }
 
@@ -284,7 +286,7 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 		int press = scanJoystick(selected_attack);
 		if (*last_selected_attack != *selected_attack) {
 			updateFightMenu(player_pxm, *selected_attack, *last_selected_attack);
-			displayMoveStats(player_pxm, *selected_attack);
+			updateMoveStats(player_pxm, *selected_attack);
 			*last_selected_attack = *selected_attack;
 		}
 		if (press == LOW) {
