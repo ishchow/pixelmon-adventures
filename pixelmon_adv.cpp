@@ -16,7 +16,7 @@ Description:
 #include <SD.h>
 
 #include "lcd_image.h"
-#include <avr/pgmspace.h> // For PROGMEM
+#include <avr/pgmspace.h> // For PROGMEM and F()
 #include "allpixelmon.h"
 
 // Display pins:
@@ -166,7 +166,7 @@ void displayStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	// Player pixelmon:
 	tft.setCursor(0, 33);
 	tft.print(allPixelmon[player_pxm->pixelmon_id].name); tft.print(F("\n"));
-	tft.print(F("Health: ")); tft.print(player_pxm->health); tft.print(F("\n"));
+	tft.print(F("Life: ")); tft.print(player_pxm->health); tft.print(F("\n"));
 	tft.print(F("Lvl: ")); tft.print(player_pxm->level); tft.print(F("\n"));
 	tft.print(F("XP: ")); tft.print(player_pxm->xp);
 
@@ -174,9 +174,11 @@ void displayStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	tft.setCursor(TFT_WIDTH/2, 33);
 	tft.print(allPixelmon[wild_pxm->pixelmon_id].name);
 	tft.setCursor(TFT_WIDTH/2, 33+8);
-	tft.print(F("Health: ")); tft.print(wild_pxm->health);
+	tft.print(F("Life: ")); tft.print(wild_pxm->health);
 	tft.setCursor(TFT_WIDTH/2, 33+16);
 	tft.print(F("Lvl: ")); tft.print(wild_pxm->level);
+	tft.setCursor(TFT_WIDTH/2, 33+24);
+	tft.print(F("XP: ")); tft.print(player_pxm->xp);
 }
 
 void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit_pxm) {
@@ -185,13 +187,13 @@ void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit_pxm) {
 	tft.setTextWrap(false);
 	if (hit_pxm == 'p') {
 		tft.setCursor(0,33+8);
-		tft.print(F("Health: "));
-		tft.fillRect(9*5, 33+8, 3*5, 7, ST7735_BLACK); // Clear previous health
+		tft.print(F("Life: "));
+		tft.fillRect(7*5, 33+8, 3*5, 7, ST7735_BLACK); // Clear previous health
 		tft.print(player_pxm->health);
 	} else if (hit_pxm == 'w') {
 		tft.setCursor(TFT_WIDTH/2, 33+8);
-		tft.print(F("Health: "));
-		tft.fillRect(TFT_WIDTH/2 + 9*5, 33+8, 3*5, 7, ST7735_BLACK); // Clear previous health
+		tft.print(F("Life: "));
+		tft.fillRect(TFT_WIDTH/2 + 7*5, 33+8, 3*5, 7, ST7735_BLACK); // Clear previous health
 		tft.print(wild_pxm->health);
 	}
 }
@@ -227,22 +229,32 @@ void updateFightMenu(pixelmon *player_pxm, int *selected_attack, int *last_selec
 	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[*selected_attack].name);
 }
 
+void showMessage(char* message) {
+	tft.setCursor(0, 33 + 5*7 + 1);
+	tft.setTextWrap(true);
+	tft.setTextSize(1);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+	tft.print(message);
+	delay(1000);
+	tft.fillRect(0, 33 + 5*7 + 1, TFT_WIDTH, 8*2, ST7735_BLACK);
+}
+
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int player_pxm_x = 0, player_pxm_y = 0;
 	int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
 	drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
 	drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
 
-	// char *options[] = {"Fight", "Run", "Swap", "Capture"};
 	displayStats(player_pxm, wild_pxm);
+	displayFightMenu(player_pxm, 0);
 
 	bool player_pxm_turn = true;
 	int selected_attack = 0;
 	int last_selected_attack = 0;
+
+	char message[64] = {0};
+
 	while (player_pxm->health > 0 && wild_pxm->health > 0) {
-		Serial.print("Player_pxm health: "); Serial.println(player_pxm->health);
-		Serial.print("Wild_pxm health: "); Serial.println(wild_pxm->health);
-		Serial.println();
 		if (player_pxm_turn) { // Player
 			displayFightMenu(player_pxm, selected_attack);
 			while (true) {
@@ -258,38 +270,63 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 					break;
 				}
 			}
+
 			// Serial.print(F("Player attacks with: "));
 			// Serial.println(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
 			// Serial.println();
+
+			sprintf(message, "%s attacks with %s",
+					allPixelmon[player_pxm->pixelmon_id].name,
+					allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
+			showMessage(message);
+
 			bool wild_pxm_hit = execAttack(player_pxm, wild_pxm, selected_attack);
 			if (wild_pxm_hit) {
+				showMessage("Attack succesful!");
 				hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
 				updateHealth(player_pxm, wild_pxm, 'w');
+			} else {
+				// message[64] = {0};
+				sprintf(message, "Wild %s dodges!", allPixelmon[wild_pxm->pixelmon_id].name);
+				showMessage(message);
+				dodgeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK, 'w');
 			}
-			else dodgeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK, 'w');
 			player_pxm_turn = false;
-			delay(500);
 		} else { // Wild Pokemon
 			int attack_id = random(4);
+
 			// Serial.print(F("Wild attacks with: "));
 			// Serial.println(allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
 			// Serial.println();
+
+			sprintf(message, "Wild %s attacks with %s",
+					allPixelmon[wild_pxm->pixelmon_id].name,
+					allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
+			showMessage(message);
+
 			bool player_pxm_hit = execAttack(wild_pxm, player_pxm, attack_id);
 			if (player_pxm_hit) {
+				sprintf(message, "%s is hit!", allPixelmon[player_pxm->pixelmon_id].name);
+				showMessage(message);
 				hitAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK);
 				updateHealth(player_pxm, wild_pxm, 'p');
 			}
-			else dodgeAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK, 'p');
+			else {
+				sprintf(message, "%s dodges!", allPixelmon[player_pxm->pixelmon_id].name);
+				showMessage(message);
+				dodgeAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK, 'p');
+			}
 			player_pxm_turn = true;
-			// delay(500);
 		}
-
-		if (wild_pxm->health < 0) {
-			Serial.println(F("Winner: ")); Serial.println(F("Player\n"));
+		
+		if (wild_pxm->health <= 0) {
+			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
+			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
 			eraseMenu();
-		} else if (player_pxm->health < 0) {
-			Serial.println(F("Winner: ")); Serial.println(F("Wild\n"));
+		} else if (player_pxm->health <= 0) {
+			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
+			showMessage(message);
 			deathAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_BLACK);
 			eraseMenu();
 		}
