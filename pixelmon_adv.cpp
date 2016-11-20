@@ -159,7 +159,7 @@ int scanJoystick(int *selection) {
     return select;
 }
 
-void displayStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
+void displayPixelmonStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	tft.setTextSize(1);
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 
@@ -259,14 +259,53 @@ void displayMoveStats(pixelmon *player_pxm, int selected_attack) {
 	tft.print(75);
 }
 
+void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
+			   pixelmon *wild_pxm, int wild_pxm_x, int wild_pxm_y,
+			   int *selected_attack, int *last_selected_attack, char* message)
+{
+	displayFightMenu(player_pxm, *selected_attack);
+	displayMoveStats(player_pxm, *selected_attack);
+	while (true) {
+		int press = scanJoystick(selected_attack);
+		if (*last_selected_attack != *selected_attack) {
+			updateFightMenu(player_pxm, *selected_attack, *last_selected_attack);
+			eraseDisplayArea();
+			displayMoveStats(player_pxm, *selected_attack);
+			*last_selected_attack = *selected_attack;
+		}
+		if (press == LOW) {
+			press = HIGH;
+			*last_selected_attack = *selected_attack;
+			eraseMenu();
+			eraseDisplayArea();
+			break;
+		}
+	}
+
+	sprintf(message, "%s attacks with %s",
+			allPixelmon[player_pxm->pixelmon_id].name,
+			allPixelmon[player_pxm->pixelmon_id].attacks[*selected_attack].name);
+	showMessage(message);
+
+	bool wild_pxm_hit = execAttack(player_pxm, wild_pxm, *selected_attack);
+	if (wild_pxm_hit) {
+		showMessage("Attack succesful!");
+		hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
+		updateHealth(player_pxm, wild_pxm, 'w');
+	} else {
+		sprintf(message, "Wild %s dodges!", allPixelmon[wild_pxm->pixelmon_id].name);
+		showMessage(message);
+		dodgeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK, 'w');
+	}
+}
+
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int player_pxm_x = 0, player_pxm_y = 0;
 	int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
 	drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
 	drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
 
-	displayStats(player_pxm, wild_pxm);
-	displayFightMenu(player_pxm, 0);
+	displayPixelmonStats(player_pxm, wild_pxm);
 
 	bool player_pxm_turn = true;
 	int selected_attack = 0;
@@ -276,51 +315,46 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 
 	while (player_pxm->health > 0 && wild_pxm->health > 0) {
 		if (player_pxm_turn) { // Player
-			displayFightMenu(player_pxm, selected_attack);
-			displayMoveStats(player_pxm, selected_attack);
-			while (true) {
-				int press = scanJoystick(&selected_attack);
-				if (last_selected_attack != selected_attack) {
-					updateFightMenu(player_pxm, selected_attack, last_selected_attack);
-					eraseDisplayArea();
-					displayMoveStats(player_pxm, selected_attack);
-					last_selected_attack = selected_attack;
-				}
-				if (press == LOW) {
-					press = HIGH;
-					last_selected_attack = selected_attack;
-					eraseMenu();
-					eraseDisplayArea();
-					break;
-				}
-			}
-
-			// Serial.print(F("Player attacks with: "));
-			// Serial.println(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
-			// Serial.println();
-
-			sprintf(message, "%s attacks with %s",
-					allPixelmon[player_pxm->pixelmon_id].name,
-					allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
-			showMessage(message);
-
-			bool wild_pxm_hit = execAttack(player_pxm, wild_pxm, selected_attack);
-			if (wild_pxm_hit) {
-				showMessage("Attack succesful!");
-				hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
-				updateHealth(player_pxm, wild_pxm, 'w');
-			} else {
-				sprintf(message, "Wild %s dodges!", allPixelmon[wild_pxm->pixelmon_id].name);
-				showMessage(message);
-				dodgeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK, 'w');
-			}
+			fightMode(player_pxm, player_pxm_x, player_pxm_y,
+						   wild_pxm, wild_pxm_x, wild_pxm_y,
+						   &selected_attack, &last_selected_attack, message);
+			// displayFightMenu(player_pxm, selected_attack);
+			// displayMoveStats(player_pxm, selected_attack);
+			// while (true) {
+			// 	int press = scanJoystick(&selected_attack);
+			// 	if (last_selected_attack != selected_attack) {
+			// 		updateFightMenu(player_pxm, selected_attack, last_selected_attack);
+			// 		eraseDisplayArea();
+			// 		displayMoveStats(player_pxm, selected_attack);
+			// 		last_selected_attack = selected_attack;
+			// 	}
+			// 	if (press == LOW) {
+			// 		press = HIGH;
+			// 		last_selected_attack = selected_attack;
+			// 		eraseMenu();
+			// 		eraseDisplayArea();
+			// 		break;
+			// 	}
+			// }
+			//
+			// sprintf(message, "%s attacks with %s",
+			// 		allPixelmon[player_pxm->pixelmon_id].name,
+			// 		allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
+			// showMessage(message);
+			//
+			// bool wild_pxm_hit = execAttack(player_pxm, wild_pxm, selected_attack);
+			// if (wild_pxm_hit) {
+			// 	showMessage("Attack succesful!");
+			// 	hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
+			// 	updateHealth(player_pxm, wild_pxm, 'w');
+			// } else {
+			// 	sprintf(message, "Wild %s dodges!", allPixelmon[wild_pxm->pixelmon_id].name);
+			// 	showMessage(message);
+			// 	dodgeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK, 'w');
+			// }
 			player_pxm_turn = false;
 		} else { // Wild Pokemon
 			int attack_id = random(4);
-
-			// Serial.print(F("Wild attacks with: "));
-			// Serial.println(allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
-			// Serial.println();
 
 			sprintf(message, "Wild %s attacks with %s",
 					allPixelmon[wild_pxm->pixelmon_id].name,
