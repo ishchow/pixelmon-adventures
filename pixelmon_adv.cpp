@@ -49,7 +49,7 @@ pixelmon ownedPixelmon[MAX_OWNED];
 
 void generatePixelmon(pixelmon *px) {
 		px->pixelmon_id = random(NUM_PIXELMON_TYPES);
-		px->health = random(75, 100);
+		px->health = random(75, 101);
 		px->level = random(1, 11);
 		px->xp = 0;
 }
@@ -79,9 +79,10 @@ bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
 	int hit_probability = random(0, 101);
 	if (hit_probability > 25) {
 		victim->health -= allPixelmon[attacker->pixelmon_id].attacks[attack_id].dmg;
+		victim->health = constrain(victim->health, 0, prev_health);
+		return true;
 	}
-	if (victim->health < prev_health) return true;
-	else return false;
+	return false;
 }
 
 void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint16_t bmp_color, uint16_t bg_color) {
@@ -99,7 +100,7 @@ void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16
 }
 
 void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
-					uint16_t bg_color, char attacked) {
+					uint16_t bg_color, char attacked_pxm) {
 	int start_x = x;
 	int last_x = x;
 	const int DODGE_LENGTH = 10;
@@ -107,7 +108,7 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 	int direction = 1;  // Direction relative to pokemon
 						// Forward: 1, Reverse: -1
 
-	if (attacked == 'p') {
+	if (attacked_pxm == 'p') {
 		while (true) {
 			if (direction == 1) x = constrain(x+MOVE_SPEED, start_x, start_x + DODGE_LENGTH);
 			else if (direction == -1) x = constrain(x-MOVE_SPEED, start_x, start_x + DODGE_LENGTH);
@@ -122,7 +123,7 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 			if (x == start_x + DODGE_LENGTH) direction = -1;
 			if (x == start_x && direction == -1) break;
 		}
-	} else if (attacked == 'w') {
+	} else if (attacked_pxm == 'w') {
 		while (true) {
 			if (direction == 1) x = constrain(x-MOVE_SPEED, start_x - DODGE_LENGTH, start_x);
 			else if (direction == -1) x = constrain(x+MOVE_SPEED, start_x - DODGE_LENGTH, start_x);
@@ -138,7 +139,6 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 			if (x == start_x && direction == -1) break;
 		}
 	}
-	delay(500);
 }
 
 int scanJoystick(int *selection) {
@@ -165,9 +165,9 @@ void displayStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 
 	// Player pixelmon:
 	tft.setCursor(0, 33);
-	tft.print(allPixelmon[player_pxm->pixelmon_id].name); tft.print("\n");
-	tft.print(F("Health: ")); tft.print(player_pxm->health); tft.print("\n");
-	tft.print(F("Lvl: ")); tft.print(player_pxm->level); tft.print("\n");
+	tft.print(allPixelmon[player_pxm->pixelmon_id].name); tft.print(F("\n"));
+	tft.print(F("Health: ")); tft.print(player_pxm->health); tft.print(F("\n"));
+	tft.print(F("Lvl: ")); tft.print(player_pxm->level); tft.print(F("\n"));
 	tft.print(F("XP: ")); tft.print(player_pxm->xp);
 
 	// Wild pixelmon:
@@ -179,16 +179,20 @@ void displayStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	tft.print(F("Lvl: ")); tft.print(wild_pxm->level);
 }
 
-void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit) {
+void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit_pxm) {
 	tft.setTextSize(1);
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	tft.setTextWrap(false);
-	if (hit == 'p') {
+	if (hit_pxm == 'p') {
 		tft.setCursor(0,33+8);
-		tft.print(F("Health: ")); tft.print(player_pxm->health);
-	} else if (hit == 'w') {
+		tft.print(F("Health: "));
+		tft.fillRect(9*5, 33+8, 3*5, 7, ST7735_BLACK); // Clear previous health
+		tft.print(player_pxm->health);
+	} else if (hit_pxm == 'w') {
 		tft.setCursor(TFT_WIDTH/2, 33+8);
-		tft.print(F("Health: ")); tft.print(wild_pxm->health);
+		tft.print(F("Health: "));
+		tft.fillRect(TFT_WIDTH/2 + 9*5, 33+8, 3*5, 7, ST7735_BLACK); // Clear previous health
+		tft.print(wild_pxm->health);
 	}
 }
 
@@ -201,7 +205,7 @@ void displayFightMenu(pixelmon *player_pxm, int selected_attack) {
 		if (i != selected_attack) tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 		else tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
 		tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[i].name);
-		tft.print("\n");
+		tft.print(F("\n"));
 	}
 }
 
@@ -236,6 +240,9 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int selected_attack = 0;
 	int last_selected_attack = 0;
 	while (player_pxm->health > 0 && wild_pxm->health > 0) {
+		Serial.print("Player_pxm health: "); Serial.println(player_pxm->health);
+		Serial.print("Wild_pxm health: "); Serial.println(wild_pxm->health);
+		Serial.println();
 		if (player_pxm_turn) { // Player
 			displayFightMenu(player_pxm, selected_attack);
 			while (true) {
@@ -251,9 +258,9 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 					break;
 				}
 			}
-			Serial.print(F("Player attacks with: "));
-			Serial.println(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
-			Serial.println();
+			// Serial.print(F("Player attacks with: "));
+			// Serial.println(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
+			// Serial.println();
 			bool wild_pxm_hit = execAttack(player_pxm, wild_pxm, selected_attack);
 			if (wild_pxm_hit) {
 				hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
@@ -264,9 +271,9 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			delay(500);
 		} else { // Wild Pokemon
 			int attack_id = random(4);
-			Serial.print(F("Wild attacks with: "));
-			Serial.println(allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
-			Serial.println();
+			// Serial.print(F("Wild attacks with: "));
+			// Serial.println(allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
+			// Serial.println();
 			bool player_pxm_hit = execAttack(wild_pxm, player_pxm, attack_id);
 			if (player_pxm_hit) {
 				hitAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK);
