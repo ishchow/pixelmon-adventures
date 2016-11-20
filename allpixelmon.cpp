@@ -33,8 +33,8 @@ void loadAllPixelmon() {
     allPixelmon[0].bitmap_width = 32;
     allPixelmon[0].attacks[0].name = "scratch"; allPixelmon[0].attacks[0].dmg = 6;
     allPixelmon[0].attacks[1].name = "bite"; allPixelmon[0].attacks[1].dmg = 11;
-    allPixelmon[0].attacks[2].name = "water gun"; allPixelmon[0].attacks[2].dmg = 13;
-    allPixelmon[0].attacks[3].name = "cute charm"; allPixelmon[0].attacks[3].dmg = 12;
+    allPixelmon[0].attacks[2].name = "water gun"; allPixelmon[0].attacks[2].dmg = 12;
+    allPixelmon[0].attacks[3].name = "cute charm"; allPixelmon[0].attacks[3].dmg = 13;
 
     allPixelmon[1].name = "bulbosaur";
     allPixelmon[1].bitmap = bulbosaur;
@@ -42,6 +42,6 @@ void loadAllPixelmon() {
     allPixelmon[1].bitmap_width = 32;
     allPixelmon[1].attacks[0].name = "tackle"; allPixelmon[1].attacks[0].dmg = 6;
     allPixelmon[1].attacks[1].name = "kick"; allPixelmon[1].attacks[1].dmg = 11;
-    allPixelmon[1].attacks[2].name = "vine whip"; allPixelmon[1].attacks[2].dmg = 13;
-    allPixelmon[1].attacks[3].name = "leaf shoot"; allPixelmon[1].attacks[3].dmg = 12;
+    allPixelmon[1].attacks[2].name = "vine whip"; allPixelmon[1].attacks[2].dmg = 12;
+    allPixelmon[1].attacks[3].name = "leaf shoot"; allPixelmon[1].attacks[3].dmg = 13;
 }

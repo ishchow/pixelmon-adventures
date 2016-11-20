@@ -77,7 +77,7 @@ void erasePixelmon(pixelmon *px, int16_t x, int16_t y, uint16_t bg_color) {
 bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
 	int prev_health = victim->health;
 	int hit_probability = random(0, 101);
-	if (hit_probability > 25) {
+	if (hit_probability >= 25) {
 		victim->health -= allPixelmon[attacker->pixelmon_id].attacks[attack_id].dmg;
 		victim->health = constrain(victim->health, 0, prev_health);
 		return true;
@@ -217,26 +217,46 @@ void eraseMenu() {
 	tft.fillRect(0, FIRST_ENTRY, TFT_WIDTH, TFT_HEIGHT - FIRST_ENTRY, ST7735_BLACK);
 }
 
-void updateFightMenu(pixelmon *player_pxm, int *selected_attack, int *last_selected_attack) {
+void updateFightMenu(pixelmon *player_pxm, int selected_attack, int last_selected_attack) {
 	const int TXT_SIZE = 2;
+	tft.setTextSize(TXT_SIZE);
 	const int FIRST_MOVE = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
-	tft.setCursor(0, FIRST_MOVE + (*last_selected_attack)*TXT_SIZE*8);
-	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[*last_selected_attack].name);
 
-	tft.setCursor(0, FIRST_MOVE + (*selected_attack)*TXT_SIZE*8);
+	tft.setCursor(0, FIRST_MOVE + last_selected_attack*TXT_SIZE*8);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[last_selected_attack].name);
+
+	tft.setCursor(0, FIRST_MOVE + selected_attack*TXT_SIZE*8);
 	tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
-	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[*selected_attack].name);
+	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
+}
+
+void eraseDisplayArea() {
+	tft.fillRect(0, 33 + 6*7 + 1, TFT_WIDTH, 8*2, ST7735_BLACK);
 }
 
 void showMessage(char* message) {
-	tft.setCursor(0, 33 + 5*7 + 1);
+	tft.setCursor(0, 33 + 6*7 + 1);
 	tft.setTextWrap(true);
 	tft.setTextSize(1);
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	tft.print(message);
 	delay(1000);
-	tft.fillRect(0, 33 + 5*7 + 1, TFT_WIDTH, 8*2, ST7735_BLACK);
+	eraseDisplayArea();
+}
+
+void displayMoveStats(pixelmon *player_pxm, int selected_attack) {
+	tft.setTextWrap(false);
+	tft.setTextSize(1);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+
+	tft.setCursor(0, 33 + 6*7 + 1);
+	tft.print("Dmg: ");
+	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].dmg);
+
+	tft.setCursor(TFT_WIDTH/2, 33 + 6*7 + 1);
+	tft.print("Acc: ");
+	tft.print(75);
 }
 
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
@@ -257,16 +277,20 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	while (player_pxm->health > 0 && wild_pxm->health > 0) {
 		if (player_pxm_turn) { // Player
 			displayFightMenu(player_pxm, selected_attack);
+			displayMoveStats(player_pxm, selected_attack);
 			while (true) {
 				int press = scanJoystick(&selected_attack);
 				if (last_selected_attack != selected_attack) {
-					updateFightMenu(player_pxm, &selected_attack, &last_selected_attack);
+					updateFightMenu(player_pxm, selected_attack, last_selected_attack);
+					eraseDisplayArea();
+					displayMoveStats(player_pxm, selected_attack);
 					last_selected_attack = selected_attack;
 				}
 				if (press == LOW) {
 					press = HIGH;
 					last_selected_attack = selected_attack;
 					eraseMenu();
+					eraseDisplayArea();
 					break;
 				}
 			}
@@ -286,7 +310,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
 				updateHealth(player_pxm, wild_pxm, 'w');
 			} else {
-				// message[64] = {0};
 				sprintf(message, "Wild %s dodges!", allPixelmon[wild_pxm->pixelmon_id].name);
 				showMessage(message);
 				dodgeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK, 'w');
@@ -310,15 +333,14 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				showMessage(message);
 				hitAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK);
 				updateHealth(player_pxm, wild_pxm, 'p');
-			}
-			else {
+			} else {
 				sprintf(message, "%s dodges!", allPixelmon[player_pxm->pixelmon_id].name);
 				showMessage(message);
 				dodgeAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK, 'p');
 			}
 			player_pxm_turn = true;
 		}
-		
+
 		if (wild_pxm->health <= 0) {
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
@@ -363,8 +385,6 @@ int main() {
 	pixelmon wd; // Wild
 	generatePixelmon(&wd);
 	battleMode(&pl, &wd);
-
-
 
 	while (true) {}
 
