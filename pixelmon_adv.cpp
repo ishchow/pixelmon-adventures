@@ -93,12 +93,13 @@ void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint1
 
 void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16_t bg_color) {
 	drawPixelmon(killed, killed_x, killed_y, ST7735_RED);
+	delay(500);
 	erasePixelmon(killed, killed_x, killed_y, bg_color);
 	delay(500);
 }
 
 void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
-					uint16_t bg_color, bool isPlayer) {
+					uint16_t bg_color, char attacked) {
 	int start_x = x;
 	int last_x = x;
 	const int DODGE_LENGTH = 10;
@@ -106,7 +107,7 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 	int direction = 1;  // Direction relative to pokemon
 						// Forward: 1, Reverse: -1
 
-	if (isPlayer) {
+	if (attacked == 'p') {
 		while (true) {
 			if (direction == 1) x = constrain(x+MOVE_SPEED, start_x, start_x + DODGE_LENGTH);
 			else if (direction == -1) x = constrain(x-MOVE_SPEED, start_x, start_x + DODGE_LENGTH);
@@ -121,7 +122,7 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 			if (x == start_x + DODGE_LENGTH) direction = -1;
 			if (x == start_x && direction == -1) break;
 		}
-	} else {
+	} else if (attacked == 'w') {
 		while (true) {
 			if (direction == 1) x = constrain(x-MOVE_SPEED, start_x - DODGE_LENGTH, start_x);
 			else if (direction == -1) x = constrain(x+MOVE_SPEED, start_x - DODGE_LENGTH, start_x);
@@ -158,6 +159,39 @@ int scanJoystick(int *selection) {
     return select;
 }
 
+void displayStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
+	tft.setTextSize(1);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+
+	// Player pixelmon:
+	tft.setCursor(0, 33);
+	tft.print(allPixelmon[player_pxm->pixelmon_id].name); tft.print("\n");
+	tft.print(F("Health: ")); tft.print(player_pxm->health); tft.print("\n");
+	tft.print(F("Lvl: ")); tft.print(player_pxm->level); tft.print("\n");
+	tft.print(F("XP: ")); tft.print(player_pxm->xp);
+
+	// Wild pixelmon:
+	tft.setCursor(TFT_WIDTH/2, 33);
+	tft.print(allPixelmon[wild_pxm->pixelmon_id].name);
+	tft.setCursor(TFT_WIDTH/2, 33+8);
+	tft.print(F("Health: ")); tft.print(wild_pxm->health);
+	tft.setCursor(TFT_WIDTH/2, 33+16);
+	tft.print(F("Lvl: ")); tft.print(wild_pxm->level);
+}
+
+void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit) {
+	tft.setTextSize(1);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+	tft.setTextWrap(false);
+	if (hit == 'p') {
+		tft.setCursor(0,33+8);
+		tft.print(F("Health: ")); tft.print(player_pxm->health);
+	} else if (hit == 'w') {
+		tft.setCursor(TFT_WIDTH/2, 33+8);
+		tft.print(F("Health: ")); tft.print(wild_pxm->health);
+	}
+}
+
 void displayFightMenu(pixelmon *player_pxm, int selected_attack) {
 	const int TXT_SIZE = 2;
 	const int FIRST_MOVE = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
@@ -171,10 +205,10 @@ void displayFightMenu(pixelmon *player_pxm, int selected_attack) {
 	}
 }
 
-void eraseFightMenu() {
+void eraseMenu() {
 	const int TXT_SIZE = 2;
-	const int FIRST_MOVE = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
-	tft.fillRect(0, FIRST_MOVE, TFT_WIDTH, TFT_HEIGHT - FIRST_MOVE, ST7735_BLACK);
+	const int FIRST_ENTRY = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
+	tft.fillRect(0, FIRST_ENTRY, TFT_WIDTH, TFT_HEIGHT - FIRST_ENTRY, ST7735_BLACK);
 }
 
 void updateFightMenu(pixelmon *player_pxm, int *selected_attack, int *last_selected_attack) {
@@ -189,26 +223,20 @@ void updateFightMenu(pixelmon *player_pxm, int *selected_attack, int *last_selec
 	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[*selected_attack].name);
 }
 
-
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
-	int player_pxm_x = 0, player_pxm_y = 32;
+	int player_pxm_x = 0, player_pxm_y = 0;
 	int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
 	drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
 	drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
 
-	// while (true) {
-	// 	scanJoystick(&selected_attack);
-	// 	if (last_selected_attack != selected_attack) {
-	// 		updateFightMenu(player_pxm, &selected_attack, &last_selected_attack);
-	// 		last_selected_attack = selected_attack;
-	// 	}
-	// }
+	// char *options[] = {"Fight", "Run", "Swap", "Capture"};
+	displayStats(player_pxm, wild_pxm);
 
-	bool player_pxmTurn = true;
+	bool player_pxm_turn = true;
 	int selected_attack = 0;
 	int last_selected_attack = 0;
 	while (player_pxm->health > 0 && wild_pxm->health > 0) {
-		if (player_pxmTurn) { // Player
+		if (player_pxm_turn) { // Player
 			displayFightMenu(player_pxm, selected_attack);
 			while (true) {
 				int press = scanJoystick(&selected_attack);
@@ -219,38 +247,44 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				if (press == LOW) {
 					press = HIGH;
 					last_selected_attack = selected_attack;
-					eraseFightMenu();
+					eraseMenu();
 					break;
 				}
 			}
-			Serial.print("Player attacks with: ");
+			Serial.print(F("Player attacks with: "));
 			Serial.println(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
 			Serial.println();
 			bool wild_pxm_hit = execAttack(player_pxm, wild_pxm, selected_attack);
-			if (wild_pxm_hit) hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
-			else dodgeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK, false);
-			player_pxmTurn = false;
+			if (wild_pxm_hit) {
+				hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
+				updateHealth(player_pxm, wild_pxm, 'w');
+			}
+			else dodgeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK, 'w');
+			player_pxm_turn = false;
 			delay(500);
 		} else { // Wild Pokemon
 			int attack_id = random(4);
-			Serial.print("Wild attacks with: ");
+			Serial.print(F("Wild attacks with: "));
 			Serial.println(allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
 			Serial.println();
 			bool player_pxm_hit = execAttack(wild_pxm, player_pxm, attack_id);
-			if (player_pxm_hit) hitAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK);
-			else dodgeAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK, true);
-			player_pxmTurn = true;
+			if (player_pxm_hit) {
+				hitAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK);
+				updateHealth(player_pxm, wild_pxm, 'p');
+			}
+			else dodgeAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK, 'p');
+			player_pxm_turn = true;
 			// delay(500);
 		}
 
 		if (wild_pxm->health < 0) {
-			Serial.println("Winner: "); Serial.println("Player\n");
+			Serial.println(F("Winner: ")); Serial.println(F("Player\n"));
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
-			eraseFightMenu();
+			eraseMenu();
 		} else if (player_pxm->health < 0) {
-			Serial.println("Winner: "); Serial.println("Wild\n");
+			Serial.println(F("Winner: ")); Serial.println(F("Wild\n"));
 			deathAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_BLACK);
-			eraseFightMenu();
+			eraseMenu();
 		}
 	}
 
@@ -261,9 +295,9 @@ void setup() {
     Serial.begin(9600);
 	randomSeed(analogRead(7));
 
-    Serial.print("Initializing SD card...");
+    Serial.print(F("Initializing SD card..."));
     if (!SD.begin(SD_CS)) {
-        Serial.println("failed!");
+        Serial.println(F("failed!"));
         return;
     }
 
@@ -273,7 +307,7 @@ void setup() {
 	pinMode(JOY_SEL, INPUT);
     digitalWrite(JOY_SEL, HIGH); // enables pull-up resistor
 
-    Serial.println("OK!");
+    Serial.println(F("OK!"));
 }
 
 int main() {
