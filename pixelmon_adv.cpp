@@ -315,26 +315,80 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 	}
 }
 
+void displayBattleMenu(const char *options[], int selected_option) {
+	const int TXT_SIZE = 2;
+	const int FIRST_ENTRY = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
+	tft.setTextSize(TXT_SIZE);
+	tft.setCursor(0, FIRST_ENTRY);
+	for (int i = 0; i < 4; ++i) {
+		if (i != selected_option) tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+		else tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
+		tft.print(options[i]);
+		tft.print(F("\n"));
+	}
+}
+
+void updateBattleMenu(const char *options[], int selected_option, int last_selected_option) {
+	const int TXT_SIZE = 2;
+	tft.setTextSize(TXT_SIZE);
+	const int FIRST_MOVE = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
+
+	tft.setCursor(0, FIRST_MOVE + last_selected_option*TXT_SIZE*8);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+	tft.print(options[last_selected_option]);
+
+	tft.setCursor(0, FIRST_MOVE + selected_option*TXT_SIZE*8);
+	tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
+	tft.print(options[selected_option]);
+}
+
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int player_pxm_x = 0, player_pxm_y = 0;
 	int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
 	drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
 	drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
-
 	displayPixelmonStats(player_pxm, wild_pxm);
+
+	int selected_option = 0;
+	int last_selected_option = 0;
+	const char *options[] = {"Fight", "Flee", "Capture", "Swap"};
 
 	bool player_pxm_turn = true;
 	int selected_attack = 0;
 	int last_selected_attack = 0;
 
 	char message[64] = {0};
+	bool flee = false;
 
-	while (player_pxm->health > 0 && wild_pxm->health > 0) {
+	while ((player_pxm->health > 0 && wild_pxm->health > 0) && !flee) {
 		if (player_pxm_turn) { // Player
+			displayBattleMenu(options, selected_option);
+			while (true) {
+				int press = scanJoystick(&selected_option);
+				if (last_selected_option != selected_option) {
+					updateBattleMenu(options, selected_option, last_selected_option);
+					last_selected_option = selected_option;
+				}
+				if (press == LOW) {
+					press = HIGH;
+					last_selected_option = selected_option;
+					eraseMenu();
+					break;
+				}
+			}
 
-			fightMode(player_pxm, player_pxm_x, player_pxm_y,
-						   wild_pxm, wild_pxm_x, wild_pxm_y,
-						   &selected_attack, &last_selected_attack, message);
+			if (selected_option == 0) {
+				fightMode(player_pxm, player_pxm_x, player_pxm_y,
+						  wild_pxm, wild_pxm_x, wild_pxm_y,
+						  &selected_attack, &last_selected_attack, message);
+			} else if (selected_option == 1) {
+				flee = true;
+				showMessage("You fled!");
+			}
+
+			// fightMode(player_pxm, player_pxm_x, player_pxm_y,
+			// 		  wild_pxm, wild_pxm_x, wild_pxm_y,
+			// 		  &selected_attack, &last_selected_attack, message);
 
 			player_pxm_turn = false;
 		} else { // Wild Pokemon
