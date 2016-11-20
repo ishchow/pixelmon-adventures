@@ -259,6 +259,21 @@ void displayMoveStats(pixelmon *player_pxm, int selected_attack) {
 	tft.print(75);
 }
 
+void updateMoveStats(pixelmon *player_pxm, int selected_attack) {
+	tft.setTextWrap(false);
+	tft.setTextSize(1);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+
+	tft.setCursor(6*5, 33 + 6*7 + 1);
+	tft.fillRect(6*5, 33 + 6*7 + 1, (TFT_WIDTH/2) - 6*5, 7, ST7735_BLACK);
+	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].dmg);
+
+
+	tft.setCursor(TFT_WIDTH/2, 33 + 6*7 + 1);
+	tft.fillRect((TFT_WIDTH/2) + 6*5, 33 + 6*7 + 1, (TFT_WIDTH-1) - ((TFT_WIDTH/2) + 6*5), 7, ST7735_BLACK);
+	tft.print(75);
+}
+
 void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 			   pixelmon *wild_pxm, int wild_pxm_x, int wild_pxm_y,
 			   int *selected_attack, int *last_selected_attack, char* message)
@@ -269,7 +284,6 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 		int press = scanJoystick(selected_attack);
 		if (*last_selected_attack != *selected_attack) {
 			updateFightMenu(player_pxm, *selected_attack, *last_selected_attack);
-			eraseDisplayArea();
 			displayMoveStats(player_pxm, *selected_attack);
 			*last_selected_attack = *selected_attack;
 		}
@@ -319,10 +333,10 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			fightMode(player_pxm, player_pxm_x, player_pxm_y,
 						   wild_pxm, wild_pxm_x, wild_pxm_y,
 						   &selected_attack, &last_selected_attack, message);
-						   
+
 			player_pxm_turn = false;
 		} else { // Wild Pokemon
-			int attack_id = random(4);
+			int attack_id = random(4); // Pick random move
 
 			sprintf(message, "Wild %s attacks with %s",
 					allPixelmon[wild_pxm->pixelmon_id].name,
