@@ -6,7 +6,7 @@
 
 typedef struct {
     char* name;
-    int dmg;
+    uint16_t dmg;
 } fight_move;
 
 typedef struct {
@@ -23,6 +23,7 @@ typedef struct {
 } pixelmon;
 
 const int NUM_PIXELMON_TYPES = 2;
+const int MAX_OWNED = 6;
 const int16_t PXM_BMP_WIDTH = 32;
 const int16_t PXM_BMP_HEIGHT = 32;
 

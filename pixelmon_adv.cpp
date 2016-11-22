@@ -63,7 +63,7 @@ bool encounter_wild_pixelmon = 0;
 
 extern pixelmon_type allPixelmon[];
 
-const int MAX_OWNED = 6;
+int pxm_owned = 1; // 1 <= pxm_owned <= MAX_OWNED
 pixelmon ownedPixelmon[MAX_OWNED];
 
 //get centre position of joystick and set as default
@@ -101,7 +101,7 @@ void updateScreen() {
 }
 
 // scan joystick and update cursor position
-int scanJoystick(int* selection, uint8_t game_mode){
+int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection){
 	int v = analogRead(JOY_VERT_ANALOG);
 	int h = analogRead(JOY_HORIZ_ANALOG);
 	int select = digitalRead(JOY_SEL); // HIGH when not pressed, LOW when pressed
@@ -145,9 +145,9 @@ int scanJoystick(int* selection, uint8_t game_mode){
 		if (abs(v - g_joyCentreY) > JOY_DEADZONE) {
 			int delta = v - g_joyCentreY;
 			if (delta > 0) {
-				*selection = constrain(*selection+1, 0, 3);
+				*selection = constrain(*selection+1, 0, max_selection-1);
 			} else {
-				*selection = constrain(*selection-1, 0, 3);
+				*selection = constrain(*selection-1, 0, max_selection-1);
 			}
 		}
 	}
@@ -186,37 +186,46 @@ int main() {
 
 	updateMap();
 
+	for (int i = 0; i < MAX_OWNED - 1; ++i) {
+		generatePixelmon(&ownedPixelmon[i]);
+	}
+
 	int startTime = millis();
 	while (true) {
 
 		if (encounter_wild_pixelmon) {
-			pixelmon pl; // Player
-			generatePixelmon(&pl);
 			pixelmon wd; // Wild
 			generatePixelmon(&wd);
 
 			tft.fillScreen(ST7735_BLACK);
-			battleMode(&pl, &wd);
+			battleMode(&ownedPixelmon[0], &wd);
 			encounter_wild_pixelmon = false;
 			updateMap();
 			updateScreen();
 		} else {
 			uint8_t game_mode = 0;
-			scanJoystick(NULL, game_mode);
+			scanJoystick(NULL, game_mode, NULL);
 			if (update) updateScreen();
 		}
 
-		// if (encounter_wild_pixelmon == 1) {
-		// 	change_game_mode();
+		// for (int i = 0; i < MAX_OWNED - 1; ++i) {
+		// 	generatePixelmon(&ownedPixelmon[i]);
 		// }
-		// if (update == 1 && game_mode == 0) {
-		// 	updateScreen();
+		// pixelmon wd; // Wild
+		// generatePixelmon(&wd);
+		//
+		// for (int i = 0; i < MAX_OWNED; ++i) {
+		// 	printPixelmon(&ownedPixelmon[i]);
 		// }
-		// else if (game_mode == 1) {
-		// 	tft.fillScreen(ST7735_BLACK);
-		// 	battleMode(&pl, &wd);
-		// 	encounter_wild_pixelmon = false;
+		//
+		// tft.fillScreen(ST7735_BLACK);
+		// battleMode(&ownedPixelmon[0], &wd);
+		//
+		// for (int i = 0; i < MAX_OWNED; ++i) {
+		// 	printPixelmon(&ownedPixelmon[i]);
 		// }
+		//
+		// while (true) {}
 
 		//keep constant framerate
 		int timeDiff = millis() - startTime; //time elapsed from start of loop until after refresh

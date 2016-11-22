@@ -15,6 +15,8 @@ void generatePixelmon(pixelmon *px);
 
 bool pixelmonEqual(pixelmon *px1, pixelmon *px2);
 
+void printPixelmon(pixelmon *px);
+
 void drawPixelmon(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color);
 
 void erasePixelmon(int16_t x, int16_t y, uint16_t bg_color);

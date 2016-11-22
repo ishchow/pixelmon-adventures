@@ -2,8 +2,9 @@
 
 // Dirty hacks to get rid of compiler errors
 extern pixelmon_type allPixelmon[];
+extern pixelmon ownedPixelmon[];
 extern Adafruit_ST7735 tft;
-extern int scanJoystick(int* selection, uint8_t game_mode);
+extern int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection);
 static const int TFT_WIDTH = 128; // Had to use this cuz TFT_WIDTH & TFT_HEIGHT
 static const int TFT_HEIGHT = 160; // were declared as a define.
                                    // Could change the #defines to const int
@@ -22,6 +23,15 @@ bool pixelmonEqual(pixelmon *px1, pixelmon *px2) {
 	else if (px1->level != px2->level) return false;
 	else if (px1->xp != px2->xp) return false;
 	else return true;
+}
+
+void printPixelmon(pixelmon *px) {
+    Serial.println();
+    Serial.print("Pixelmon name: "); Serial.println(allPixelmon[px->pixelmon_id].name);
+    Serial.print("\tHealth: "); Serial.println(px->health);
+    Serial.print("\tLvl: "); Serial.println(px->level);
+    Serial.print("\tXP: "); Serial.println(px->xp);
+    Serial.println();
 }
 
 void drawPixelmon(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color) {
@@ -221,10 +231,11 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 			   int *selected_attack, int *last_selected_attack, char* message)
 {
     uint8_t game_mode = 1;
+    uint8_t max_sel = 4;
 	displayFightMenu(player_pxm, *selected_attack);
 	displayMoveStats(player_pxm, *selected_attack);
 	while (true) {
-		int press = scanJoystick(selected_attack, game_mode);
+		int press = scanJoystick(selected_attack, game_mode, max_sel);
 		if (*last_selected_attack != *selected_attack) {
 			updateFightMenu(player_pxm, *selected_attack, *last_selected_attack);
 			updateMoveStats(player_pxm, *selected_attack);
@@ -293,20 +304,22 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 
 	int selected_option = 0;
 	int last_selected_option = 0;
-	const char *options[] = {"Fight", "Flee", "Capture", "Swap"};
 
-	bool player_pxm_turn = true;
+	const char *options[] = {"Fight", "Flee", "Capture", "Swap"};
 	int selected_attack = 0;
 	int last_selected_attack = 0;
 
+    bool player_pxm_turn = true;
 	char message[64] = {0};
 	bool flee = false;
+    bool capture = false;
 
-	while ((player_pxm->health > 0 && wild_pxm->health > 0) && !flee) {
+	while ((player_pxm->health > 0 && wild_pxm->health > 0) && !flee && !capture) {
 		if (player_pxm_turn) { // Player
+            uint8_t max_sel = 4;
 			displayBattleMenu(options, selected_option);
 			while (true) {
-				int press = scanJoystick(&selected_option, game_mode);
+				int press = scanJoystick(&selected_option, game_mode, max_sel);
 				if (last_selected_option != selected_option) {
 					updateBattleMenu(options, selected_option, last_selected_option);
 					last_selected_option = selected_option;
@@ -319,14 +332,33 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				}
 			}
 
-			if (selected_option == 0) {
+			if (selected_option == 0) { // Fight
 				fightMode(player_pxm, player_pxm_x, player_pxm_y,
 						  wild_pxm, wild_pxm_x, wild_pxm_y,
 						  &selected_attack, &last_selected_attack, message);
-			} else if (selected_option == 1) {
+			} else if (selected_option == 1) { // Flee
 				flee = true;
 				showMessage("You fled!");
-			}
+			} else if (selected_option == 2) { // Capture
+                sprintf(message, "You throw a pokeball at wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
+                showMessage(message);
+                erasePixelmon(wild_pxm_x, wild_pxm_y, ST7735_BLACK);
+                delay(500);
+                capture = random(101) <= 25;
+                if (capture) {
+                    sprintf(message, "You captured wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
+                    showMessage(message);
+                    ownedPixelmon[1] = *wild_pxm;
+                } else {
+                    sprintf(message, "Wild %s escaped!", allPixelmon[wild_pxm->pixelmon_id].name);
+                    showMessage(message);
+                    drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_MAGENTA);
+                    delay(500);
+                    drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
+                }
+            } else if (selected_option == 3) { // Swap
+
+            }
 
 			player_pxm_turn = false;
 		} else { // Wild Pokemon
