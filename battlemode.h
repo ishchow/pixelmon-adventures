@@ -17,7 +17,7 @@ bool pixelmonEqual(pixelmon *px1, pixelmon *px2);
 
 void drawPixelmon(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color);
 
-void erasePixelmon(pixelmon *px, int16_t x, int16_t y, uint16_t bg_color);
+void erasePixelmon(int16_t x, int16_t y, uint16_t bg_color);
 
 bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id);
 

@@ -1,11 +1,9 @@
 #include "battlemode.h"
 
 // Dirty hacks to get rid of compiler errors
-extern const int NUM_PIXELMON_TYPES;
 extern pixelmon_type allPixelmon[];
 extern Adafruit_ST7735 tft;
-extern void change_game_mode();
-extern int scanJoystick(int* selection);
+extern int scanJoystick(int* selection, uint8_t game_mode);
 static const int TFT_WIDTH = 128; // Had to use this cuz TFT_WIDTH & TFT_HEIGHT
 static const int TFT_HEIGHT = 160; // were declared as a define.
                                    // Could change the #defines to const int
@@ -27,15 +25,11 @@ bool pixelmonEqual(pixelmon *px1, pixelmon *px2) {
 }
 
 void drawPixelmon(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color) {
-	tft.drawBitmap(x, y, allPixelmon[px->pixelmon_id].bitmap,
-				   allPixelmon[px->pixelmon_id].bitmap_width,
-				   allPixelmon[px->pixelmon_id].bitmap_height, bmp_color);
+	tft.drawBitmap(x, y, allPixelmon[px->pixelmon_id].bitmap, PXM_BMP_WIDTH, PXM_BMP_HEIGHT, bmp_color);
 }
 
-void erasePixelmon(pixelmon *px, int16_t x, int16_t y, uint16_t bg_color) {
-	tft.fillRect(x, y,
-				 allPixelmon[px->pixelmon_id].bitmap_width,
-				 allPixelmon[px->pixelmon_id].bitmap_height, bg_color);
+void erasePixelmon(int16_t x, int16_t y, uint16_t bg_color) {
+	tft.fillRect(x, y, PXM_BMP_WIDTH, PXM_BMP_HEIGHT, bg_color);
 }
 
 bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
@@ -51,7 +45,7 @@ bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
 
 void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint16_t bmp_color, uint16_t bg_color) {
 	delay(500);
-	erasePixelmon(injured, injured_x, injured_y, bg_color);
+	erasePixelmon(injured_x, injured_y, bg_color);
 	delay(500);
 	drawPixelmon(injured, injured_x, injured_y, bmp_color);
 }
@@ -59,7 +53,7 @@ void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint1
 void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16_t bg_color) {
 	drawPixelmon(killed, killed_x, killed_y, ST7735_RED);
 	delay(500);
-	erasePixelmon(killed, killed_x, killed_y, bg_color);
+	erasePixelmon(killed_x, killed_y, bg_color);
 	delay(500);
 }
 
@@ -78,7 +72,7 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 			else if (direction == -1) x = constrain(x-MOVE_SPEED, start_x, start_x + DODGE_LENGTH);
 
 			if (x != last_x) {
-				erasePixelmon(px, last_x, y, ST7735_BLACK);
+				erasePixelmon(last_x, y, ST7735_BLACK);
 				delay(50);
 				drawPixelmon(px, x, y, ST7735_WHITE);
 				last_x = x;
@@ -93,7 +87,7 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 			else if (direction == -1) x = constrain(x+MOVE_SPEED, start_x - DODGE_LENGTH, start_x);
 
 			if (x != last_x) {
-				erasePixelmon(px, last_x, y, ST7735_BLACK);
+				erasePixelmon(last_x, y, ST7735_BLACK);
 				delay(50);
 				drawPixelmon(px, x, y, ST7735_WHITE);
 				last_x = x;
@@ -226,10 +220,11 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 			   pixelmon *wild_pxm, int wild_pxm_x, int wild_pxm_y,
 			   int *selected_attack, int *last_selected_attack, char* message)
 {
+    uint8_t game_mode = 1;
 	displayFightMenu(player_pxm, *selected_attack);
 	displayMoveStats(player_pxm, *selected_attack);
 	while (true) {
-		int press = scanJoystick(selected_attack);
+		int press = scanJoystick(selected_attack, game_mode);
 		if (*last_selected_attack != *selected_attack) {
 			updateFightMenu(player_pxm, *selected_attack, *last_selected_attack);
 			updateMoveStats(player_pxm, *selected_attack);
@@ -289,6 +284,7 @@ void updateBattleMenu(const char *options[], int selected_option, int last_selec
 }
 
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
+    uint8_t game_mode = 1;
 	int player_pxm_x = 0, player_pxm_y = 0;
 	int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
 	drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
@@ -310,7 +306,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 		if (player_pxm_turn) { // Player
 			displayBattleMenu(options, selected_option);
 			while (true) {
-				int press = scanJoystick(&selected_option);
+				int press = scanJoystick(&selected_option, game_mode);
 				if (last_selected_option != selected_option) {
 					updateBattleMenu(options, selected_option, last_selected_option);
 					last_selected_option = selected_option;
@@ -330,7 +326,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			} else if (selected_option == 1) {
 				flee = true;
 				showMessage("You fled!");
-				change_game_mode();
 			}
 
 			player_pxm_turn = false;
@@ -356,20 +351,18 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			player_pxm_turn = true;
 		}
 
-		wild_pxm->health = 0;
+		// wild_pxm->health = 0;
 
 		if (wild_pxm->health <= 0) {
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
 			eraseMenu();
-			change_game_mode();
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_BLACK);
 			eraseMenu();
-			change_game_mode();
 		}
 	}
 

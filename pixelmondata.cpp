@@ -1,5 +1,7 @@
 #include "pixelmondata.h"
 
+pixelmon_type allPixelmon[NUM_PIXELMON_TYPES];
+
 const uint8_t squirtle[] PROGMEM = {
        // 'squirtle'
        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -24,13 +26,9 @@ const uint8_t bulbosaur[] PROGMEM = {
    	0x01, 0x0f, 0xe1, 0xd4, 0x16, 0x07, 0xaa, 0x78, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00
    };
 
-pixelmon_type allPixelmon[NUM_PIXELMON_TYPES];
-
 void loadAllPixelmon() {
     allPixelmon[0].name = "squirtle";
     allPixelmon[0].bitmap = squirtle;
-    allPixelmon[0].bitmap_height = 32;
-    allPixelmon[0].bitmap_width = 32;
     allPixelmon[0].attacks[0].name = "scratch"; allPixelmon[0].attacks[0].dmg = 6;
     allPixelmon[0].attacks[1].name = "bite"; allPixelmon[0].attacks[1].dmg = 11;
     allPixelmon[0].attacks[2].name = "water gun"; allPixelmon[0].attacks[2].dmg = 12;
@@ -38,8 +36,6 @@ void loadAllPixelmon() {
 
     allPixelmon[1].name = "bulbosaur";
     allPixelmon[1].bitmap = bulbosaur;
-    allPixelmon[1].bitmap_height = 32;
-    allPixelmon[1].bitmap_width = 32;
     allPixelmon[1].attacks[0].name = "tackle"; allPixelmon[1].attacks[0].dmg = 6;
     allPixelmon[1].attacks[1].name = "kick"; allPixelmon[1].attacks[1].dmg = 11;
     allPixelmon[1].attacks[2].name = "vine whip"; allPixelmon[1].attacks[2].dmg = 12;

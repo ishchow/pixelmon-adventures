@@ -50,15 +50,15 @@ int g_joyCentreY;
 //global variables for sprite's x,y position
 int g_spriteX = TFT_WIDTH/2;
 int g_spriteY = TFT_HEIGHT/2;
+
 //previously drawn position of sprite
 int g_prevX = -1;
 int g_prevY = -1;
 
-//global var. is 1 when joystick is moved or pressed, 0 otherwise
-int update = 0;
+//global var. is true when joystick is moved or pressed, false otherwise
+bool update = false;
 
-//stores mode: map = 0, battle = 1
-bool game_mode = 0;
+// If true, used to enter battle mode
 bool encounter_wild_pixelmon = 0;
 
 extern pixelmon_type allPixelmon[];
@@ -89,27 +89,19 @@ void updateScreen() {
 	lcd_image_draw(&map_image, &tft,
 		top_leftX + g_prevX, top_leftY + g_prevY,
 		g_prevX, g_prevY,
-		18, 27);
+		SPRITE_WIDTH-1, SPRITE_HEIGHT);
 		g_prevX = g_spriteX;
 		g_prevY = g_spriteY;
 		//draws new sprite
 		lcd_image_draw(&sprite, &tft,
 			0, 0, // image
 			g_prevX, g_prevY, // screen
-			18, 27); // amount to draw
-			update = 0;
-}
-
-//change between game modes
-void change_game_mode() {
-	game_mode = !game_mode;
-	update = 1;
-	Serial.print("Game Mode: ");
-	Serial.println(game_mode);
+			SPRITE_WIDTH-1, SPRITE_HEIGHT-1); // amount to draw
+		update = false;
 }
 
 // scan joystick and update cursor position
-int scanJoystick(int* selection){
+int scanJoystick(int* selection, uint8_t game_mode){
 	int v = analogRead(JOY_VERT_ANALOG);
 	int h = analogRead(JOY_HORIZ_ANALOG);
 	int select = digitalRead(JOY_SEL); // HIGH when not pressed, LOW when pressed
@@ -118,7 +110,7 @@ int scanJoystick(int* selection){
 	if (game_mode == 0) { // map mode = 0
 		if (abs(v - g_joyCentreY) > JOY_DEADZONE) { //vertical movement
 			//outside of deadzone
-			update = 1;
+			update = true;
 			if (random(0,100)>80) {encounter_wild_pixelmon = 1;}
 			int newY = g_spriteY + (v - g_joyCentreY)/INV_SPRITE_SPEED;
 			g_spriteY = constrain(newY, 0, TFT_HEIGHT - SPRITE_HEIGHT - 1);
@@ -133,7 +125,7 @@ int scanJoystick(int* selection){
 			}
 		}
 		if (abs(h - g_joyCentreX) > JOY_DEADZONE) { //horizontal movement
-			update = 1;
+			update = true;
 			if (random(0,100)>80) {encounter_wild_pixelmon = 1;}
 			//outside of deadzone
 			int newX = g_spriteX + (h - g_joyCentreX)/INV_SPRITE_SPEED;
@@ -183,7 +175,7 @@ void setup() {
 	// clear to black
 	tft.fillScreen(ST7735_BLACK);
 	calibrateJoyCentre();
-	update = 1;
+	update = true;
 
 	Serial.println("Setup Complete");
 }
@@ -196,23 +188,36 @@ int main() {
 
 	int startTime = millis();
 	while (true) {
-		pixelmon pl; // Player
-		generatePixelmon(&pl);
-		pixelmon wd; // Wild
-		generatePixelmon(&wd);
 
-		scanJoystick(NULL);
+		if (encounter_wild_pixelmon) {
+			pixelmon pl; // Player
+			generatePixelmon(&pl);
+			pixelmon wd; // Wild
+			generatePixelmon(&wd);
 
-		if (encounter_wild_pixelmon == 1) {
-			change_game_mode();
-		}
-		if (update == 1 && game_mode == 0) {
-			updateScreen();
-		}
-		else if (game_mode == 1) {
 			tft.fillScreen(ST7735_BLACK);
 			battleMode(&pl, &wd);
+			encounter_wild_pixelmon = false;
+			updateMap();
+			updateScreen();
+		} else {
+			uint8_t game_mode = 0;
+			scanJoystick(NULL, game_mode);
+			if (update) updateScreen();
 		}
+
+		// if (encounter_wild_pixelmon == 1) {
+		// 	change_game_mode();
+		// }
+		// if (update == 1 && game_mode == 0) {
+		// 	updateScreen();
+		// }
+		// else if (game_mode == 1) {
+		// 	tft.fillScreen(ST7735_BLACK);
+		// 	battleMode(&pl, &wd);
+		// 	encounter_wild_pixelmon = false;
+		// }
+
 		//keep constant framerate
 		int timeDiff = millis() - startTime; //time elapsed from start of loop until after refresh
 		if (timeDiff < MILLIS_PER_FRAME){
