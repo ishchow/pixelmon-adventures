@@ -30,11 +30,9 @@ Description:
 #define JOY_HORIZ_ANALOG 1
 #define JOY_DEADZONE 64
 #define JOY_CENTRE 512
-#define JOY_SPEED 5
 #define JOY_SEL 9
 
 #define MILLIS_PER_FRAME 50 // 20fps
-#define STEPS_PER_PIXEL 64
 
 #define TFT_WIDTH 128
 #define TFT_HEIGHT 160
