@@ -29,15 +29,15 @@ const uint8_t bulbosaur[] PROGMEM = {
 void loadAllPixelmon() {
     allPixelmon[0].name = "squirtle";
     allPixelmon[0].bitmap = squirtle;
-    allPixelmon[0].attacks[0].name = "scratch"; allPixelmon[0].attacks[0].dmg = 6;
-    allPixelmon[0].attacks[1].name = "bite"; allPixelmon[0].attacks[1].dmg = 11;
-    allPixelmon[0].attacks[2].name = "water gun"; allPixelmon[0].attacks[2].dmg = 12;
-    allPixelmon[0].attacks[3].name = "cute charm"; allPixelmon[0].attacks[3].dmg = 13;
+    allPixelmon[0].attacks[0].name = "headbutt"; allPixelmon[0].attacks[0].dmg = 6;
+    allPixelmon[0].attacks[1].name = "spin"; allPixelmon[0].attacks[1].dmg = 11;
+    allPixelmon[0].attacks[2].name = "squirt"; allPixelmon[0].attacks[2].dmg = 12;
+    allPixelmon[0].attacks[3].name = "tail wag"; allPixelmon[0].attacks[3].dmg = 13;
 
     allPixelmon[1].name = "bulbosaur";
     allPixelmon[1].bitmap = bulbosaur;
-    allPixelmon[1].attacks[0].name = "tackle"; allPixelmon[1].attacks[0].dmg = 6;
-    allPixelmon[1].attacks[1].name = "kick"; allPixelmon[1].attacks[1].dmg = 11;
-    allPixelmon[1].attacks[2].name = "vine whip"; allPixelmon[1].attacks[2].dmg = 12;
-    allPixelmon[1].attacks[3].name = "leaf shoot"; allPixelmon[1].attacks[3].dmg = 13;
+    allPixelmon[1].attacks[0].name = "scream"; allPixelmon[1].attacks[0].dmg = 6;
+    allPixelmon[1].attacks[1].name = "pounce"; allPixelmon[1].attacks[1].dmg = 11;
+    allPixelmon[1].attacks[2].name = "chomp"; allPixelmon[1].attacks[2].dmg = 12;
+    allPixelmon[1].attacks[3].name = "bomb"; allPixelmon[1].attacks[3].dmg = 13;
 }

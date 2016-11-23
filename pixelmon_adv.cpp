@@ -22,7 +22,6 @@
 #define JOY_DEADZONE 64
 
 #define MILLIS_PER_FRAME 50 // 20fps
-#define STEPS_PER_PIXEL 64
 
 #define TFT_WIDTH 128
 #define TFT_HEIGHT 160
@@ -111,13 +110,13 @@ int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection){
 		if (abs(v - g_joyCentreY) > JOY_DEADZONE) { //vertical movement
 			//outside of deadzone
 			update = true;
-			if (random(0,100)>80) {encounter_wild_pixelmon = 1;}
+			if (random(0,100)>90) {encounter_wild_pixelmon = 1;}
 			int newY = g_spriteY + (v - g_joyCentreY)/INV_SPRITE_SPEED;
 			g_spriteY = constrain(newY, 0, TFT_HEIGHT - SPRITE_HEIGHT - 1);
 			//check if sprite is off screen and not at map edge
 			// if 1, shift map; if 0, do nothing
-			if ( ((newY >= TFT_HEIGHT)&& (top_leftY!= MAP_DIMENSIONS - TFT_HEIGHT -1)) || ((newY < 0) && (top_leftY != 0)) ) {
-				g_spriteY = constrain(TFT_HEIGHT - g_spriteY, 0, TFT_HEIGHT - SPRITE_HEIGHT - 1);
+			if ( ((newY >= TFT_HEIGHT - SPRITE_HEIGHT)&& (top_leftY!= MAP_DIMENSIONS - TFT_HEIGHT -1)) || ((newY < 0) && (top_leftY != 0)) ) {
+				g_spriteY = constrain(TFT_HEIGHT - SPRITE_HEIGHT - g_spriteY, 0, TFT_HEIGHT - SPRITE_HEIGHT - 1);
 				// Serial.print("newY: "); Serial.println(newY);
 				// Serial.println(abs(newY)/newY);
 				top_leftY = constrain(top_leftY + (abs(newY)/newY)*TFT_HEIGHT, 0 , MAP_DIMENSIONS - TFT_HEIGHT -1);
@@ -126,14 +125,14 @@ int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection){
 		}
 		if (abs(h - g_joyCentreX) > JOY_DEADZONE) { //horizontal movement
 			update = true;
-			if (random(0,100)>80) {encounter_wild_pixelmon = 1;}
+			if (random(0,100)>90) {encounter_wild_pixelmon = 1;}
 			//outside of deadzone
 			int newX = g_spriteX + (h - g_joyCentreX)/INV_SPRITE_SPEED;
 			g_spriteX = constrain(newX, 0, TFT_WIDTH - SPRITE_WIDTH);
 			//check if sprite is off screen and not at map edge
 			// if 1, shift map; if 0, do nothing
-			if ((newX >= TFT_WIDTH )&&(top_leftX!= MAP_DIMENSIONS - TFT_WIDTH -1)|| ((newX < 0) && (top_leftX != 0)) ) {
-				g_spriteX = constrain(TFT_WIDTH - g_spriteX, 0, TFT_WIDTH - SPRITE_WIDTH - 1);
+			if ((newX >= TFT_WIDTH - SPRITE_WIDTH )&&(top_leftX!= MAP_DIMENSIONS - TFT_WIDTH -1)|| ((newX < 0) && (top_leftX != 0)) ) {
+				g_spriteX = constrain(TFT_WIDTH - SPRITE_WIDTH - g_spriteX, 0, TFT_WIDTH - SPRITE_WIDTH - 1);
 				// Serial.println(abs(newX)/newX);
 				// Serial.print("newX: "); Serial.println(newX);
 				top_leftX = constrain(top_leftX + (abs(newX)/newX)*TFT_WIDTH, 0 , MAP_DIMENSIONS - TFT_WIDTH -1);
