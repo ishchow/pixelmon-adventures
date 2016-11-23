@@ -10,6 +10,7 @@ static const int TFT_HEIGHT = 160; // were declared as a define.
                                    // Could change the #defines to const int
                                    // or declare in header
 
+// fxn gives each pixelmon stats
 void generatePixelmon(pixelmon *px) {
 		px->pixelmon_id = random(NUM_PIXELMON_TYPES);
 		px->health = random(75, 101);
@@ -17,6 +18,7 @@ void generatePixelmon(pixelmon *px) {
 		px->xp = 0;
 }
 
+// fxn to check if two pixelmon are same
 bool pixelmonEqual(pixelmon *px1, pixelmon *px2) {
 	if (px1->pixelmon_id != px2->pixelmon_id) return false;
 	else if (px1->health != px2->health) return false;
@@ -25,6 +27,7 @@ bool pixelmonEqual(pixelmon *px1, pixelmon *px2) {
 	else return true;
 }
 
+// fxn to show pixelmon stats on serial-mon
 void printPixelmon(pixelmon *px) {
     Serial.println();
     Serial.print("Pixelmon name: "); Serial.println(allPixelmon[px->pixelmon_id].name);
@@ -34,14 +37,23 @@ void printPixelmon(pixelmon *px) {
     Serial.println();
 }
 
+// fxn uses drawBitmap to draw .bmp
 void drawPixelmon(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color) {
 	tft.drawBitmap(x, y, allPixelmon[px->pixelmon_id].bitmap, PXM_BMP_WIDTH, PXM_BMP_HEIGHT, bmp_color);
+	/* arguments for drawBitmap:
+	top left corner
+	(deref) pointer to bitmap
+	size of .bmp
+	color
+	*/
 }
 
+// fxn to draw black boxes - similar arguments as drawBitmap
 void erasePixelmon(int16_t x, int16_t y, uint16_t bg_color) {
 	tft.fillRect(x, y, PXM_BMP_WIDTH, PXM_BMP_HEIGHT, bg_color);
 }
 
+// fxn to calc. dmg
 bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
 	int prev_health = victim->health;
 	int hit_probability = random(0, 101);
@@ -131,6 +143,7 @@ void displayPixelmonStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	tft.print(F("XP: ")); tft.print(player_pxm->xp);
 }
 
+// display health changes on screen
 void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit_pxm) {
 	tft.setTextSize(1);
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
@@ -148,6 +161,7 @@ void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit_pxm) {
 	}
 }
 
+// print fight moves, based on position of 1st move
 void displayFightMenu(pixelmon *player_pxm, int selected_attack) {
 	const int TXT_SIZE = 2;
 	const int FIRST_MOVE = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
@@ -167,6 +181,7 @@ void eraseMenu() {
 	tft.fillRect(0, FIRST_ENTRY, TFT_WIDTH, TFT_HEIGHT - FIRST_ENTRY, ST7735_BLACK);
 }
 
+// put previous attack in white letters/black bg; put selected_attack in black letters/white bg
 void updateFightMenu(pixelmon *player_pxm, int selected_attack, int last_selected_attack) {
 	const int TXT_SIZE = 2;
 	tft.setTextSize(TXT_SIZE);
@@ -226,6 +241,7 @@ void updateMoveStats(pixelmon *player_pxm, int selected_attack) {
 	tft.print(75);
 }
 
+// one of two fxns for fighting; this one does attacks
 void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 			   pixelmon *wild_pxm, int wild_pxm_x, int wild_pxm_y,
 			   int *selected_attack, int *last_selected_attack, char* message)
@@ -234,7 +250,7 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
     uint8_t max_sel = 4;
 	displayFightMenu(player_pxm, *selected_attack);
 	displayMoveStats(player_pxm, *selected_attack);
-	while (true) {
+	while (true) { //selection of attack while loop
 		int press = scanJoystick(selected_attack, game_mode, max_sel);
 		if (*last_selected_attack != *selected_attack) {
 			updateFightMenu(player_pxm, *selected_attack, *last_selected_attack);
@@ -249,15 +265,15 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 			break;
 		}
 	}
-
+	//show the attack selected
 	sprintf(message, "%s attacks with %s",
 			allPixelmon[player_pxm->pixelmon_id].name,
 			allPixelmon[player_pxm->pixelmon_id].attacks[*selected_attack].name);
 	showMessage(message);
-
+	// do the attack calc.
 	bool wild_pxm_hit = execAttack(player_pxm, wild_pxm, *selected_attack);
 	if (wild_pxm_hit) {
-		showMessage("Attack succesful!");
+		showMessage("Attack successful!");
 		hitAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_BLACK);
 		updateHealth(player_pxm, wild_pxm, 'w');
 	} else {
@@ -267,6 +283,7 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 	}
 }
 
+// menu for fight, flee, capture, swap
 void displayBattleMenu(const char *options[], int selected_option) {
 	const int TXT_SIZE = 2;
 	const int FIRST_ENTRY = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
@@ -280,6 +297,7 @@ void displayBattleMenu(const char *options[], int selected_option) {
 	}
 }
 
+// highlights selected battle menu option
 void updateBattleMenu(const char *options[], int selected_option, int last_selected_option) {
 	const int TXT_SIZE = 2;
 	tft.setTextSize(TXT_SIZE);
@@ -294,6 +312,7 @@ void updateBattleMenu(const char *options[], int selected_option, int last_selec
 	tft.print(options[selected_option]);
 }
 
+// complete fxn that uses fightmode and other fxns to conduct entire battle
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
     uint8_t game_mode = 1;
 	int player_pxm_x = 0, player_pxm_y = 0;
@@ -349,19 +368,22 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
                     sprintf(message, "You captured wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
                     showMessage(message);
                     ownedPixelmon[1] = *wild_pxm;
-                } else {
+                }
+								else {
                     sprintf(message, "Wild %s escaped!", allPixelmon[wild_pxm->pixelmon_id].name);
                     showMessage(message);
                     drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_MAGENTA);
                     delay(500);
                     drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
                 }
-            } else if (selected_option == 3) { // Swap
+            }
+						else if (selected_option == 3) { // Swap
 
             }
 
 			player_pxm_turn = false;
-		} else { // Wild Pokemon
+		}
+		else { // Wild Pokemon turn
 			int attack_id = random(4); // Pick random move
 
 			sprintf(message, "Wild %s attacks with %s",

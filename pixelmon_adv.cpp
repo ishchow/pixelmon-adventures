@@ -6,8 +6,8 @@
 
 #include "lcd_image.h"
 #include <avr/pgmspace.h> // For PROGMEM
-#include "pixelmondata.h"
-#include "battlemode.h"
+#include "pixelmondata.h" //loads pixelmon data types and data
+#include "battlemode.h" //pixelmon stats, battlemode, menus
 
 // Display pins:
 // standard U of A library settings, assuming Atmel Mega SPI pins
@@ -86,9 +86,10 @@ void updateMap(){
 void updateScreen() {
 	//clear old sprite
 	lcd_image_draw(&map_image, &tft,
-		top_leftX + g_prevX, top_leftY + g_prevY,
-		g_prevX, g_prevY,
-		SPRITE_WIDTH-1, SPRITE_HEIGHT);
+		top_leftX + g_prevX, top_leftY + g_prevY, // image
+		g_prevX, g_prevY, // screen
+		SPRITE_WIDTH, SPRITE_HEIGHT); //amount drawn
+		// new coord. of sprite
 		g_prevX = g_spriteX;
 		g_prevY = g_spriteY;
 		//draws new sprite
@@ -96,7 +97,7 @@ void updateScreen() {
 			0, 0, // image
 			g_prevX, g_prevY, // screen
 			SPRITE_WIDTH-1, SPRITE_HEIGHT-1); // amount to draw
-		update = false;
+		update = false; //stop drawing
 }
 
 // scan joystick and update cursor position
@@ -144,9 +145,9 @@ int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection){
 		if (abs(v - g_joyCentreY) > JOY_DEADZONE) {
 			int delta = v - g_joyCentreY;
 			if (delta > 0) {
-				*selection = constrain(*selection+1, 0, max_selection-1);
+				*selection = constrain(*selection+1, 0, max_selection-1); //down
 			} else {
-				*selection = constrain(*selection-1, 0, max_selection-1);
+				*selection = constrain(*selection-1, 0, max_selection-1); //up
 			}
 		}
 	}
@@ -157,10 +158,8 @@ int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection){
 void setup() {
 	init();
 	Serial.begin(9600);
-	randomSeed(analogRead(7));
-
+	randomSeed(analogRead(7)); // for better random numbers
 	tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black or blue tab
-
 	// init SD card
 	Serial.print("Initializing SD card...");
 	if (!SD.begin(SD_CS)) {
@@ -168,14 +167,11 @@ void setup() {
 		return;
 	}
 	Serial.println("OK!");
-
 	digitalWrite(JOY_SEL, HIGH); // enable joystick internal pull-up resistor
-
 	// clear to black
 	tft.fillScreen(ST7735_BLACK);
 	calibrateJoyCentre();
 	update = true;
-
 	Serial.println("Setup Complete");
 }
 
