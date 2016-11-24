@@ -13,8 +13,8 @@ static const int TFT_HEIGHT = 160; // were declared as a define.
 // fxn gives each pixelmon stats
 void generatePixelmon(pixelmon *px) {
 		px->pixelmon_id = random(NUM_PIXELMON_TYPES);
-		px->health = random(75, 101);
 		px->level = random(1, 11);
+		px->health = 100 + (px->level)*10;
 		px->xp = 0;
 }
 
@@ -412,6 +412,8 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
 			eraseMenu();
+			player_pxm->health = 100 + (player_pxm->level)*10;
+			player_pxm->xp += (wild_pxm->level)*10;
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
 			showMessage(message);
