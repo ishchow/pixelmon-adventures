@@ -40,8 +40,8 @@ void int_to_serial3(int num) {
 */
 int int_from_serial3() {
     int num = 0;
-    num = num | ((uint32_t) Serial3.read()) << 0;
-    num = num | ((uint32_t) Serial3.read()) << 8;
+    num = num | ((int) Serial3.read()) << 0;
+    num = num | ((int) Serial3.read()) << 8;
     return num;
 }
 
@@ -142,7 +142,6 @@ pixelmon clientFSM( pixelmon player_pxm ) {
   bool ontime;
   long timeout = 1000;
   pixelmon enemy_pxm;
-  uint32_t publicKeyB;
   while (true) {
     // START state
     if (curr_state == START) {
@@ -266,7 +265,7 @@ pixelmon serverKey(pixelmon player_pxm){
             currentState = WaitAck;
         }
         // If response is received, store key and Acknowledge communication
-        else if (currentState == WaitAck && wait_on_serial3(1 + sizeof(pixelmon), timeout)){
+        else if (currentState == WaitAck && wait_on_serial3(5, timeout)){
             letter = Serial3.read();
             // skey = uint32_from_serial3(); /* Read and store regardless of whether
             //                                  'A' or not in order to clear buffer
