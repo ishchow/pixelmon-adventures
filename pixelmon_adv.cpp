@@ -185,6 +185,18 @@ int main() {
 	setup();
 	loadAllPixelmon();
 
+	pixelmon player_pxm;
+	pixelmon enemy_pxm;
+	generatePixelmon(&player_pxm);
+	printPixelmon(&player_pxm);
+	if (digitalRead(13) == HIGH) {
+		enemy_pxm = serverFSM(player_pxm);
+	} else {
+		enemy_pxm = clientFSM(player_pxm);
+	}
+	printPixelmon(&enemy_pxm);
+	while (true) {}
+
 	updateMap();
 
 	for (int i = 0; i < MAX_OWNED - 1; ++i) {
