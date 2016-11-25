@@ -61,6 +61,83 @@ pixelmon pixelmon_from_serial3() {
     return px;
 }
 
+//server finite state machine to exchange player pixelmon and enemy pixelmon
+pixelmon serverFSM( pixelmon player_pxm ) {
+  enum State { LISTEN = 1, WAITKEY, WAITACK, DATAEXC };
+  State curr_state = LISTEN;
+  // declare variables
+  bool ontime;
+  long timeout = 1000;
+  pixelmon enemy_pxm;
+  while (true) {
+    // LISTEN state (1)
+    if (curr_state == LISTEN && Serial3.read() == 'C') {
+      curr_state = WAITKEY;
+    }
+    // WAITKEY state (2)
+    else if (curr_state == WAITKEY) {
+      ontime = wait_on_serial3(sizeof(pixelmon),timeout);
+      if (ontime == false) {
+        curr_state = LISTEN;
+      }
+      else {
+        enemy_pxm = pixelmon_from_serial3();
+        Serial3.write('A');
+        pixelmon_to_serial3(player_pxm);
+        curr_state = WAITACK;
+      }
+    }
+    // WAITACK state (3)
+    else if (curr_state == WAITACK) {
+      ontime = wait_on_serial3(1,timeout);
+      if (ontime == false) {
+        curr_state = LISTEN;
+      }
+      else if (Serial3.read() == 'C') {
+        curr_state = WAITKEY;
+      }
+      // DATAEXC state
+      else if (Serial3.read() == 'A') {
+        curr_state = DATAEXC;
+        return enemy_pxm;
+      }
+    }
+  }
+}
+
+//client finite state machine to exchange player pixelmon and enemy pixelmon
+pixelmon clientFSM( pixelmon player_pxm ) {
+  enum State { START = 1, WAITACK, DATAEXC };
+  State curr_state = START;
+  // declare variables
+  bool ontime;
+  long timeout = 1000;
+  pixelmon enemy_pxm;
+  uint32_t publicKeyB;
+  while (true) {
+    // START state
+    if (curr_state == START) {
+      Serial3.write('C');
+      pixelmon_to_serial3(player_pxm);
+      curr_state = WAITACK;
+    }
+    // WAITACK state
+    else if (curr_state = WAITACK) {
+      ontime = wait_on_serial3(1+sizeof(pixelmon),timeout);
+      if (ontime == false) {
+        curr_state = START;
+      }
+      // DATAEXC state
+      else if ((char)Serial3.read() == 'A') {
+        enemy_pxm = pixelmon_from_serial3();
+        Serial3.write('A');
+        curr_state = DATAEXC;
+        return enemy_pxm;
+      }
+    }
+  }
+}
+
 pixelmon clientKey(pixelmon player_pxm){
     /*
     If the Arduino is configured as a server, it will fetch the client's public
