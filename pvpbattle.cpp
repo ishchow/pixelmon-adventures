@@ -82,9 +82,17 @@ pixelmon serverFSM( pixelmon player_pxm ) {
         curr_state = LISTEN;
       }
       else {
-        enemy_pxm = pixelmon_from_serial3();
+        // enemy_pxm = pixelmon_from_serial3();
+        enemy_pxm.pixelmon_id = int_from_serial3();
+        enemy_pxm.health = int_from_serial3();
+        enemy_pxm.level = int_from_serial3();
+        enemy_pxm.xp = int_from_serial3();
         Serial3.write('A');
-        pixelmon_to_serial3(player_pxm);
+        // pixelmon_to_serial3(player_pxm);
+        int_to_serial3(player_pxm.pixelmon_id);
+        int_to_serial3(player_pxm.health);
+        int_to_serial3(player_pxm.level);
+        int_to_serial3(player_pxm.xp);
         curr_state = WAITACK1;
       }
     }
@@ -109,7 +117,11 @@ pixelmon serverFSM( pixelmon player_pxm ) {
         curr_state = LISTEN;
       }
       else {
-        enemy_pxm = pixelmon_from_serial3();
+        // enemy_pxm = pixelmon_from_serial3();
+        enemy_pxm.pixelmon_id = int_from_serial3();
+        enemy_pxm.health = int_from_serial3();
+        enemy_pxm.level = int_from_serial3();
+        enemy_pxm.xp = int_from_serial3();
         curr_state = WAITACK2;
       }
     }
@@ -146,7 +158,11 @@ pixelmon clientFSM( pixelmon player_pxm ) {
     // START state
     if (curr_state == START) {
       Serial3.write('C');
-      pixelmon_to_serial3(player_pxm);
+      // pixelmon_to_serial3(player_pxm);
+      int_to_serial3(player_pxm.pixelmon_id);
+      int_to_serial3(player_pxm.health);
+      int_to_serial3(player_pxm.level);
+      int_to_serial3(player_pxm.xp);
       curr_state = WAITACK;
     }
     // WAITACK state
@@ -157,7 +173,11 @@ pixelmon clientFSM( pixelmon player_pxm ) {
       }
       // DATAEXC state
       else if ((char)Serial3.read() == 'A') {
-        enemy_pxm = pixelmon_from_serial3();
+        // enemy_pxm = pixelmon_from_serial3();
+        enemy_pxm.pixelmon_id = int_from_serial3();
+        enemy_pxm.health = int_from_serial3();
+        enemy_pxm.level = int_from_serial3();
+        enemy_pxm.xp = int_from_serial3();
         Serial3.write('A');
         curr_state = DATAEXC;
         return enemy_pxm;
