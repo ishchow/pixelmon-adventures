@@ -35,6 +35,11 @@ void pixelmon_to_serial3(pixelmon px);
 
 pixelmon pixelmon_from_serial3();
 
-pixelmon clientKey(pixelmon player_pxm);
+//server finite state machine to exchange player pixelmon and enemy pixelmon
+pixelmon serverFSM( pixelmon player_pxm );
+
+//client finite state machine to exchange player pixelmon and enemy pixelmon
+pixelmon clientFSM( pixelmon player_pxm );
+
 
 #endif
