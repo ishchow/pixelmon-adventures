@@ -210,7 +210,7 @@ int main() {
 			Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
 			delay(50); // Prevent debouncing?
-				if (allOwnedPixelmonDead()) healAllOwnedPixelmon();
+			if (allOwnedPixelmonDead()) healAllOwnedPixelmon();
 		} else {
 			uint8_t game_mode = 0;
 			scanJoystick(NULL, game_mode, NULL);

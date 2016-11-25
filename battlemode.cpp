@@ -402,9 +402,12 @@ void updatePlayerPixelmon(int selected_pxm, int player_pxm_x, int player_pxm_y,
 }
 
 // makes pixelmon get xp and level up
-void levelUpPixelmon(pixelmon *player_pxm, pixelmon *wild_pxm) {
-	char message[64]={0};
-
+void levelUpPixelmon(pixelmon *player_pxm, char *message) {
+	sprintf(message, "%s leveled up!", allPixelmon[player_pxm->pixelmon_id].name);
+	showMessage(message);
+	player_pxm->level += 1;
+	player_pxm->xp = 0;
+	player_pxm->health = 100 + (player_pxm->level)*10;
 }
 
 // Swaps current pixelmon with another in player's inventory
@@ -539,20 +542,16 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			player_pxm_turn = true;
 		}
 
+		wild_pxm->health = 0;
+
 		if (wild_pxm->health <= 0) {
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
+			player_pxm->xp += (wild_pxm->level)*10;
 			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
 			showMessage(message);
-			player_pxm->xp += (wild_pxm->level)*10;
-			if (player_pxm->xp >= 100) {
-				sprintf(message, "%s leveled up!", allPixelmon[player_pxm->pixelmon_id].name);
-				showMessage(message);
-				player_pxm->level += 1;
-				player_pxm->xp = 0;
-			}
-			player_pxm->health = 100 + (player_pxm->level)*10;
+			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
 			eraseMenu();
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
