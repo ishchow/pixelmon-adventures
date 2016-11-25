@@ -266,7 +266,7 @@ pixelmon serverKey(pixelmon player_pxm){
             currentState = WaitAck;
         }
         // If response is received, store key and Acknowledge communication
-        else if (currentState == WaitAck && wait_on_serial3(5, timeout)){
+        else if (currentState == WaitAck && wait_on_serial3(1 + sizeof(pixelmon), timeout)){
             letter = Serial3.read();
             // skey = uint32_from_serial3(); /* Read and store regardless of whether
             //                                  'A' or not in order to clear buffer
