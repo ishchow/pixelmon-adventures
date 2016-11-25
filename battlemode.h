@@ -56,6 +56,17 @@ void displayBattleMenu(const char *options[], int selected_option);
 
 void updateBattleMenu(const char *options[], int selected_option, int last_selected_option);
 
+void displaySwapMenu(int selected_pxm);
+
+void updateSwapMenu(int selected_pxm, int last_selected_pxm,
+					pixelmon *player_pxm, pixelmon *last_player_pxm);
+
+void updatePlayerPixelmon(int selected_pxm, int player_pxm_x, int player_pxm_y,
+						  pixelmon *player_pxm, pixelmon *last_player_pxm);
+
+void swapMode(pixelmon *player_pxm, int player_pxm_x , int player_pxm_y,
+		  pixelmon *last_player_pxm, int* selected_pxm, int* last_selected_pxm, char *message);
+
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm);
 
 #endif
