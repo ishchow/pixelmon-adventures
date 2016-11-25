@@ -145,8 +145,10 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 		if (abs(v - g_joyCentreY) > JOY_DEADZONE) {
 			int delta = v - g_joyCentreY;
 			if (delta > 0) {
+				delay(100);
 				*selection = constrain(*selection+1, 0, max_selection-1); //down
 			} else {
+				delay(100);
 				*selection = constrain(*selection-1, 0, max_selection-1); //up
 			}
 		}
@@ -187,9 +189,10 @@ int main() {
 		generatePixelmon(&ownedPixelmon[i]);
 		printPixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
-		if ( i != MAX_OWNED - 2) {
-			ownedPixelmon[i].health = 0;
-		}
+		// this line is odd; causes monster health to go to 0
+		// if ( i != MAX_OWNED - 2) {
+		// 	ownedPixelmon[i].health = 0;
+		// }
 	}
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 

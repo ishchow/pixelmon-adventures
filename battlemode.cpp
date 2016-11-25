@@ -81,6 +81,7 @@ bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
 	return false;
 }
 
+// bmp for pixelmon blinks once
 void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint16_t bmp_color, uint16_t bg_color) {
 	delay(500);
 	erasePixelmon(injured_x, injured_y, bg_color);
@@ -88,6 +89,7 @@ void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint1
 	drawPixelmon(injured, injured_x, injured_y, bmp_color);
 }
 
+// draw pixelmon red
 void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16_t bg_color) {
 	drawPixelmon(killed, killed_x, killed_y, ST7735_RED);
 	delay(500);
@@ -95,6 +97,7 @@ void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16
 	delay(500);
 }
 
+// draw/redraw pixelmon rapidly side to side
 void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 					uint16_t bg_color, char attacked_pxm) {
 	int start_x = x;
@@ -137,6 +140,7 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 	}
 }
 
+// print stats to tft
 void displayPixelmonStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	tft.setTextSize(1);
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
@@ -192,6 +196,7 @@ void displayFightMenu(pixelmon *player_pxm, int selected_attack) {
 	}
 }
 
+// clear fight/battle menus
 void eraseMenu() {
 	tft.fillRect(0, PXM_BMP_HEIGHT + 4*8 + 1, TFT_WIDTH, TFT_HEIGHT - 33, ST7735_BLACK);
 }
@@ -212,10 +217,12 @@ void updateFightMenu(pixelmon *player_pxm, int selected_attack, int last_selecte
 	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].name);
 }
 
+
 void eraseDisplayArea() {
 	tft.fillRect(0, 33 + 6*7 + 1, TFT_WIDTH, 8*2, ST7735_BLACK);
 }
 
+// display text to screen
 void showMessage(char* message) {
 	tft.setCursor(0, 33 + 6*7 + 1);
 	tft.setTextWrap(true);
@@ -478,7 +485,9 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			} else if (selected_option == 2) { // Swap
 				swapMode(&player_pxm, player_pxm_x, player_pxm_y,
 					 	 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
-            } else if (selected_option == 3) { // Capture
+					 }
+					 else if (selected_option == 3 && num_pxm_owned == 6) {showMessage("You can only have six Pixelmon!");}
+					 else if (selected_option == 3 && num_pxm_owned < 6) { // Capture
                 sprintf(message, "You throw a pokeball at wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
                 showMessage(message);
                 erasePixelmon(wild_pxm_x, wild_pxm_y, ST7735_BLACK);
