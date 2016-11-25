@@ -406,9 +406,9 @@ void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 		if (*last_selected_pxm != *selected_pxm) {
 			*player_pxm = &ownedPixelmon[*selected_pxm];
 			updateSwapMenu(*selected_pxm, *last_selected_pxm,
-				*player_pxm, *last_player_pxm);
+						   *player_pxm, *last_player_pxm);
 			updatePlayerPixelmon(*selected_pxm, player_pxm_x, player_pxm_y,
-				*player_pxm, *last_player_pxm);
+								 *player_pxm, *last_player_pxm);
 			*last_selected_pxm = *selected_pxm;
 			*last_player_pxm = *player_pxm;
 		}
@@ -455,7 +455,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
             uint8_t max_sel = 4;
 			displayBattleMenu(options, selected_option);
 			while (true) {
-				printPixelmon(player_pxm);
 				int press = scanJoystick(&selected_option, game_mode, max_sel);
 				if (last_selected_option != selected_option) {
 					updateBattleMenu(options, selected_option, last_selected_option);
@@ -540,8 +539,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			if(!allOwnedPixelmonDead()) {
 				swapMode(&player_pxm, player_pxm_x, player_pxm_y,
 					 	 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
-						 Serial.print("player health: ");
-						 Serial.println(player_pxm->health);
 			}
 		}
 	}
