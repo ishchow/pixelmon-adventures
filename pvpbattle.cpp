@@ -63,19 +63,20 @@ pixelmon pixelmon_from_serial3() {
 
 //server finite state machine to exchange player pixelmon and enemy pixelmon
 pixelmon serverFSM( pixelmon player_pxm ) {
-  enum State { LISTEN = 1, WAITKEY, WAITACK, DATAEXC };
+  enum State { LISTEN = 1, WAITKEY1, WAITACK1, WAITKEY2, WAITACK2, DATAEXC };
   State curr_state = LISTEN;
   // declare variables
   bool ontime;
   long timeout = 1000;
   pixelmon enemy_pxm;
+  char getChar;
   while (true) {
     // LISTEN state (1)
     if (curr_state == LISTEN && Serial3.read() == 'C') {
-      curr_state = WAITKEY;
+      curr_state = WAITKEY1;
     }
-    // WAITKEY state (2)
-    else if (curr_state == WAITKEY) {
+    // WAITKEY1 state (2)
+    else if (curr_state == WAITKEY1) {
       ontime = wait_on_serial3(sizeof(pixelmon),timeout);
       if (ontime == false) {
         curr_state = LISTEN;
@@ -83,24 +84,52 @@ pixelmon serverFSM( pixelmon player_pxm ) {
       else {
         enemy_pxm = pixelmon_from_serial3();
         Serial3.write('A');
-        pixelmon_to_serial3(player_pxm);
-        curr_state = WAITACK;
+        pixelmon_to_serial3();
+        curr_state = WAITACK1;
       }
     }
-    // WAITACK state (3)
-    else if (curr_state == WAITACK) {
+    // WAITACK1 state (3)
+    else if (curr_state == WAITACK1) {
       ontime = wait_on_serial3(1,timeout);
+      getChar = Serial3.read();
       if (ontime == false) {
         curr_state = LISTEN;
       }
-      else if (Serial3.read() == 'C') {
-        curr_state = WAITKEY;
+      else if (getChar == 'C') {
+        curr_state = WAITKEY2;
       }
-      // DATAEXC state
-      else if (Serial3.read() == 'A') {
+      else if (getChar == 'A') {
         curr_state = DATAEXC;
-        return enemy_pxm;
       }
+    }
+    // WAITKEY2 state (4)
+    else if (curr_state == WAITKEY2) {
+      ontime = wait_on_serial3(sizeof(pixelmon),timeout);
+      if (ontime == false) {
+        curr_state = LISTEN;
+      }
+      else {
+        enemy_pxm = pixelmon_from_serial3();
+        curr_state = WAITACK2;
+      }
+    }
+    // WAITACK2 state (5)
+    else if (curr_state == WAITACK2) {
+      ontime = wait_on_serial3(1,timeout);
+      getChar = Serial3.read();
+      if (ontime == false) {
+        curr_state = LISTEN;
+      }
+      else if (getChar == 'C') {
+        curr_state = WAITKEY2;
+      }
+      else if (getChar == 'A') {
+        curr_state = DATAEXC;
+      }
+    }
+    // DATAEXC state
+    else if (curr_state == DATAEXC) {
+      return enemy_pxm;
     }
   }
 }
@@ -136,4 +165,78 @@ pixelmon clientFSM( pixelmon player_pxm ) {
       }
     }
   }
+}
+
+pixelmon clientKey(pixelmon player_pxm){
+    /*
+    If the Arduino is configured as a server, it will fetch the client's public
+    key using a Finite State Machine. Lastly, it will return the client's public
+    key.
+    */
+    long timeout = 1000;
+    char letter;
+    pixelmon opponent_pxm;
+
+    enum State { Listen,    WaitKey1,  WaitAck1,
+                 WaitKey2,  WaitAck2,  DataXchange};
+    State currentState = Listen;
+
+    // FSM control
+    while(1){
+        Serial.print("Current state: "); Serial.println(currentState);
+        // Wait indefinitely for the first Comm Req
+        // This is done in case the client is turned on/reset before the server
+        if (currentState == Listen && wait_on_serial3(1, -1)){
+            letter = Serial3.read();
+            if (letter == 'C') {
+                currentState = WaitKey1;
+            } else {
+                currentState = Listen;
+            }
+        }
+        // Save ckey if it comes through and then send Acknowledge.
+        else if (currentState == WaitKey1 && wait_on_serial3(sizeof(pixelmon), timeout)){
+            // ckey = uint32_from_serial3();
+			opponent_pxm = pixelmon_from_serial3();
+            Serial3.write("A");
+            // uint32_to_serial3(skey);
+			pixelmon_to_serial3(player_pxm);
+            currentState = WaitAck1;
+        }
+        // If Comm Req is received, wait for key
+        // Else If Acknowledge is received, start exchange.
+        else if (currentState == WaitAck1 && wait_on_serial3(1, timeout)){
+            letter = Serial3.read();
+            if (letter == 'C') {
+               currentState = WaitKey2;
+            }
+            else if (letter == 'A') {
+                currentState = DataXchange;
+            }
+        }
+        // Save ckey again
+        else if (currentState == WaitKey2 && wait_on_serial3(sizeof(pixelmon), timeout)){
+            // ckey = uint32_from_serial3();
+			opponent_pxm = pixelmon_from_serial3();
+            currentState = WaitAck2;
+        }
+        // If Comm Req is received, wait for key
+        // Else If Acknowledge is received, start exchange.
+        else if (currentState == WaitAck2 && wait_on_serial3(1, timeout)){
+            letter = Serial3.read();
+            if (letter == 'C') {
+                currentState = WaitKey2;
+            } else if (letter == 'A'){
+                currentState = DataXchange;
+            }
+        }
+        else if (currentState = DataXchange){break;}
+        else {
+            while (Serial3.available() > 0) {
+				Serial3.read();
+			}
+            currentState = Listen;
+        }
+    }
+    return opponent_pxm;
 }
