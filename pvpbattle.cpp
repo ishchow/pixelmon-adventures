@@ -31,8 +31,8 @@ bool wait_on_serial3( uint8_t nbytes, long timeout ) {
 * and finishing with the most significant byte.
 */
 void int_to_serial3(int num) {
-    Serial3.write((char) (num >> 0));
-    Serial3.write((char) (num >> 8));
+    Serial3.write((char) ( (unsigned int) num >> 0));
+    Serial3.write((char) ( (unsigned int) num >> 8));
 }
 
 /** Reads an int from Serial3, starting from the least-significant
