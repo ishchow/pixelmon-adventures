@@ -240,3 +240,57 @@ pixelmon clientKey(pixelmon player_pxm){
     }
     return opponent_pxm;
 }
+
+pixelmon serverKey(pixelmon player_pxm){
+    /*
+    If the Arduino is configured as a client, it will fetch the server's public
+    key using a Finite State Machine. Lastly, it will return the server's public
+    key.
+    */
+    long timeout = 1000;
+    char letter;
+    // uint32_t skey = 0;
+    pixelmon opponent_pxm;
+
+    enum State {Start, WaitAck, DataXchange};
+    State currentState = Start;
+
+    // FSM control
+    while(1){
+        Serial.print("Current state: "); Serial.println(currentState);
+        // Initiate handshake
+        if (currentState == Start){
+            Serial3.write("C");
+            // uint32_to_serial3(ckey);
+            pixelmon_to_serial3(player_pxm);
+            currentState = WaitAck;
+        }
+        // If response is received, store key and Acknowledge communication
+        else if (currentState == WaitAck && wait_on_serial3(5, timeout)){
+            letter = Serial3.read();
+            // skey = uint32_from_serial3(); /* Read and store regardless of whether
+            //                                  'A' or not in order to clear buffer
+            //                               */
+            opponent_pxm = pixelmon_from_serial3();
+            if (letter == 'A') {
+                Serial3.write("A");
+                currentState = DataXchange;
+            } else {
+                currentState = Start;
+            }
+        }
+        // Start data exchange.;
+        else if (currentState == DataXchange){
+            break;
+        }
+        // Resets state to initial state if all the above conditions fail
+        else {
+            while (Serial3.available() > 0) {
+                Serial3.read();
+            }
+            // flush_serial_3();
+            currentState = Start;
+        }
+    }
+    return opponent_pxm;
+}

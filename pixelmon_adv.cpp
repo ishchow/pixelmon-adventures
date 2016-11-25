@@ -189,10 +189,12 @@ int main() {
 	pixelmon enemy_pxm;
 	generatePixelmon(&player_pxm);
 	printPixelmon(&player_pxm);
-	if (digitalRead(13) == HIGH) {
+	if (digitalRead(13) == HIGH) { // Server
+		// enemy_pxm = serverFSM(player_pxm);
+		enemy_pxm = clientKey(player_pxm);
+	} else { // Client
+		// enemy_pxm = clientFSM(player_pxm);
 		enemy_pxm = serverFSM(player_pxm);
-	} else {
-		enemy_pxm = clientFSM(player_pxm);
 	}
 	printPixelmon(&enemy_pxm);
 	while (true) {}
