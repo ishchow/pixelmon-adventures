@@ -8,6 +8,7 @@
 #include <avr/pgmspace.h> // For PROGMEM
 #include "pixelmondata.h" //loads pixelmon data types and data
 #include "battlemode.h" //pixelmon stats, battlemode, menus
+#include "pvpbattle.h" // for pvp pixelmon battles
 
 // Display pins:
 // standard U of A library settings, assuming Atmel Mega SPI pins
@@ -160,6 +161,7 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 void setup() {
 	init();
 	Serial.begin(9600);
+	Serial3.begin(9600);
 	randomSeed(analogRead(7)); // for better random numbers
 	tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black or blue tab
 	// init SD card
@@ -225,6 +227,7 @@ int main() {
 		startTime = millis();
 	}
 
+	Serial3.end();
 	Serial.end();
 	return 0;
 }

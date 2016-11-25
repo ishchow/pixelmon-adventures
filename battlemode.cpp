@@ -542,8 +542,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			player_pxm_turn = true;
 		}
 
-		wild_pxm->health = 0;
-
 		if (wild_pxm->health <= 0) {
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
