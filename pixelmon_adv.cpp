@@ -183,10 +183,13 @@ int main() {
 
 	updateMap();
 
-	for (int i = 0; i < 1; ++i) {
+	for (int i = 0; i < MAX_OWNED - 1; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
 		printPixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
+		if ( i != MAX_OWNED - 2) {
+			ownedPixelmon[i].health = 0;
+		}
 	}
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 
@@ -204,6 +207,7 @@ int main() {
 			Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
 			delay(50); // Prevent debouncing?
+				if (allOwnedPixelmonDead()) healAllOwnedPixelmon();
 		} else {
 			uint8_t game_mode = 0;
 			scanJoystick(NULL, game_mode, NULL);
