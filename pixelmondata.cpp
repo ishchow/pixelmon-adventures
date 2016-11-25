@@ -37,7 +37,7 @@ void loadAllPixelmon() {
 
     allPixelmon[1].name = "bulbosaur";
     allPixelmon[1].bitmap = bulbosaur;
-    allPixelmon[1].attacks[0].name = "scream"; allPixelmon[1].attacks[0].dmg = 6;
+    allPixelmon[1].attacks[0].name = "scream"; allPixelmon[1].attacks[0].dmg = 600;
     allPixelmon[1].attacks[1].name = "pounce"; allPixelmon[1].attacks[1].dmg = 11;
     allPixelmon[1].attacks[2].name = "chomp"; allPixelmon[1].attacks[2].dmg = 12;
     allPixelmon[1].attacks[3].name = "bomb"; allPixelmon[1].attacks[3].dmg = 13;
