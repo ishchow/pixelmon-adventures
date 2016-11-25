@@ -84,7 +84,7 @@ pixelmon serverFSM( pixelmon player_pxm ) {
       else {
         enemy_pxm = pixelmon_from_serial3();
         Serial3.write('A');
-        pixelmon_to_serial3();
+        pixelmon_to_serial3(player_pxm);
         curr_state = WAITACK1;
       }
     }
