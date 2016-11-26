@@ -311,11 +311,13 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
   int selected_pxm = 0;
   int last_selected_pxm = 0;
   pixelmon *last_player_pxm = player_pxm;
+  pixelmon *last_wild_pxm = wild_pxm;
   // turns var.
   bool player_pxm_turn = true;
   char message[64] = {0};
   bool flee = false;
   bool capture = false;
+  bool isEnemy = true; // Set for when updating enemy pixelmon
   // Select pixelmon before fight
   sprintf(message, "Please select a pixelmon!");
   showMessage(message);
@@ -325,12 +327,15 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
       if (player_pxm->health > 0) break;
     }
     if (digitalRead(13) == HIGH) {
+        last_wild_pxm = wild_pxm;
         *wild_pxm = pixelmonServerFSM(*player_pxm);
         player_pxm_turn = false;
     } else {
+        last_wild_pxm = wild_pxm;
         *wild_pxm = pixelmonClientFSM(*player_pxm);
         player_pxm_turn = true;
     }
+    updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
     //continue battle if one of 2 conditions are met
     while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0) {
       if (player_pxm_turn) { // Player
@@ -369,10 +374,13 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
                 if (player_pxm->health > 0) break;
               }
               if (digitalRead(13) == HIGH) {
+                last_wild_pxm = wild_pxm;
             		*wild_pxm = pixelmonServerFSM(*player_pxm);
             	} else {
+                last_wild_pxm = wild_pxm;
             		*wild_pxm = pixelmonClientFSM(*player_pxm);
             	}
+              updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
             }
             player_pxm_turn = false;
           }
@@ -420,10 +428,13 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
 			eraseMenu();
             if (digitalRead(13) == HIGH) {
+                last_wild_pxm = wild_pxm;
                 *wild_pxm = pixelmonServerFSM(*player_pxm);
             } else {
+                last_wild_pxm = wild_pxm;
                 *wild_pxm = pixelmonClientFSM(*player_pxm);
             }
+            updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
 			showMessage(message);
@@ -435,10 +446,13 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				if (player_pxm->health > 0) break;
 			}
       if (digitalRead(13) == HIGH) {
+        last_wild_pxm = wild_pxm;
         *wild_pxm = pixelmonServerFSM(*player_pxm);
       } else {
+        last_wild_pxm = wild_pxm;
         *wild_pxm = pixelmonClientFSM(*player_pxm);
       }
+      updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
 		}
 	}
 }

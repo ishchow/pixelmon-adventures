@@ -372,30 +372,33 @@ void updateSwapMenu(int selected_pxm, int last_selected_pxm,
 }
 
 // display stats and bitmap of selected pixelmon
-void updatePlayerPixelmon(int selected_pxm, int player_pxm_x, int player_pxm_y,
-						  pixelmon *player_pxm, pixelmon *last_player_pxm)
+void updatePixelmon(int player_pxm_x, int player_pxm_y,
+					pixelmon *player_pxm, pixelmon *last_player_pxm,
+					bool isEnemy)
 {
+	int cursor_x = 0;
+	if (isEnemy) cursor_x = TFT_WIDTH/2;
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	tft.setTextWrap(true);
 	if (player_pxm->pixelmon_id != last_player_pxm->pixelmon_id) {
 		erasePixelmon(player_pxm_x, player_pxm_y, ST7735_BLACK);
 		drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
 		//name
-		tft.setCursor(0, 33);
-		tft.fillRect(0, 33, TFT_WIDTH/2, 7, ST7735_BLACK); // Clear previous name
+		tft.setCursor(cursor_x, 33);
+		tft.fillRect(cursor_x, 33, TFT_WIDTH/2, 7, ST7735_BLACK); // Clear previous name
 		tft.print(allPixelmon[player_pxm->pixelmon_id].name);
 	}
 	//health
-	tft.setCursor(7*5, 33+8); // After "Life: "
-	tft.fillRect(7*5, 33+8, TFT_WIDTH/2 - 7*5, 7, ST7735_BLACK); // Clear previous life
+	tft.setCursor(cursor_x + 7*5, 33+8); // After "Life: "
+	tft.fillRect(cursor_x + 7*5, 33+8, TFT_WIDTH/2 - 7*5, 7, ST7735_BLACK); // Clear previous life
 	tft.print(player_pxm->health);
 	//level
-	tft.setCursor(6*5, 33+16); // After "Lvl: "
-	tft.fillRect(6*5, 33+16, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK); // Clear previous level
+	tft.setCursor(cursor_x + 6*5, 33+16); // After "Lvl: "
+	tft.fillRect(cursor_x + 6*5, 33+16, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK); // Clear previous level
 	tft.print(player_pxm->level);
 	//xp
-	tft.setCursor(5*5, 33+24); // After "XP: "
-	tft.fillRect(5*5, 33+24, TFT_WIDTH/2 - 5*5, 7, ST7735_BLACK); // Clear previous xp
+	tft.setCursor(cursor_x + 5*5, 33+24); // After "XP: "
+	tft.fillRect(cursor_x + 5*5, 33+24, TFT_WIDTH/2 - 5*5, 7, ST7735_BLACK); // Clear previous xp
 	tft.print(player_pxm->xp);
 }
 
@@ -421,8 +424,9 @@ void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 			*player_pxm = &ownedPixelmon[*selected_pxm];
 			updateSwapMenu(*selected_pxm, *last_selected_pxm,
 						   *player_pxm, *last_player_pxm);
-			updatePlayerPixelmon(*selected_pxm, player_pxm_x, player_pxm_y,
-								 *player_pxm, *last_player_pxm);
+			bool isEnemy = false;
+			updatePixelmon(player_pxm_x, player_pxm_y,
+						   *player_pxm, *last_player_pxm, isEnemy);
 			*last_selected_pxm = *selected_pxm;
 			*last_player_pxm = *player_pxm;
 		}

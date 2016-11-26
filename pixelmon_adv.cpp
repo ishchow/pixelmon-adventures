@@ -196,8 +196,9 @@ int main() {
 	}
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 
-	pixelmon *enemy_pxm;
-	PVPbattleMode(&ownedPixelmon[0], enemy_pxm);
+	pixelmon enemy_pxm;
+	generatePixelmon(&enemy_pxm);
+	PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
 	while (true) {}
 
 	updateMap();
