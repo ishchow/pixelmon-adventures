@@ -199,6 +199,7 @@ int main() {
 	pixelmon enemy_pxm;
 	generatePixelmon(&enemy_pxm);
 	PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
+	tft.fillScreen(ST7735_BLACK);
 	while (true) {}
 
 	updateMap();

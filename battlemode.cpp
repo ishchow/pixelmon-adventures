@@ -564,6 +564,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
 			showMessage(message);
 			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
+			updatePixelmon(player_pxm_x, player_pxm_y, *player_pxm, *last_player_pxm, isEnemy);
 			eraseMenu();
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);

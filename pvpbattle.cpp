@@ -425,7 +425,8 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			player_pxm->xp += (wild_pxm->level)*10;
 			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
 			showMessage(message);
-			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
+			if (player_pxm->xp >= 100) {levelUpPixelmon(player_pxm, message);}
+      updatePixelmon(player_pxm_x, player_pxm_y, *player_pxm, *last_player_pxm, isEnemy);
 			eraseMenu();
             if (digitalRead(13) == HIGH) {
                 last_wild_pxm = wild_pxm;
