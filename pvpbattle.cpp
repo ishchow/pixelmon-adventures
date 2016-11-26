@@ -302,6 +302,7 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
   int last_selected_option = 0;
   // battle menu choices
   const char *battle_options[] = {"Fight", "Swap"};
+  const int num_battle_options = sizeof(battle_options)/sizeof(battle_options[0]);
   int selected_attack = 0;
   int last_selected_attack = 0;
   int enemy_selected_attack = 0;
@@ -323,15 +324,22 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
       &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
       if (player_pxm->health > 0) break;
     }
+    if (digitalRead(13) == HIGH) {
+        *wild_pxm = pixelmonServerFSM(*player_pxm);
+        player_pxm_turn = false;
+    } else {
+        *wild_pxm = pixelmonClientFSM(*player_pxm);
+        player_pxm_turn = true;
+    }
     //continue battle if one of 2 conditions are met
     while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0) {
       if (player_pxm_turn) { // Player
         uint8_t max_sel = 2;
-        displayBattleMenu(battle_options, selected_option);
+        displayBattleMenu(battle_options, num_battle_options, selected_option);
         while (true) {
           int press = scanJoystick(&selected_option, game_mode, max_sel);
           if (last_selected_option != selected_option) {
-            updateBattleMenu(battle_options, selected_option, last_selected_option);
+            updateBattleMenu(battle_options, num_battle_options, selected_option, last_selected_option);
             last_selected_option = selected_option;
           }
           if (press == LOW) {
@@ -411,11 +419,11 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			showMessage(message);
 			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
 			eraseMenu();
-      if (digitalRead(13) == HIGH) {
-        *wild_pxm = pixelmonServerFSM(*player_pxm);
-      } else {
-        *wild_pxm = pixelmonClientFSM(*player_pxm);
-      }
+            if (digitalRead(13) == HIGH) {
+                *wild_pxm = pixelmonServerFSM(*player_pxm);
+            } else {
+                *wild_pxm = pixelmonClientFSM(*player_pxm);
+            }
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
 			showMessage(message);

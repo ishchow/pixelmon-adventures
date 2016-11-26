@@ -73,10 +73,11 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 			   int *selected_attack, int *last_selected_attack, char* message);
 
 // show menu for fight, flee, capture, swap on screen
-void displayBattleMenu(const char *options[], int selected_option);
+void displayBattleMenu(const char *options[], const int num_options, int selected_option);
 
 // highlights selected battle menu option
-void updateBattleMenu(const char *options[], int selected_option, int last_selected_option);
+void updateBattleMenu(const char *options[], const int num_options,
+					  int selected_option, int last_selected_option);
 
 // displays list of all owned pixelmon to swap from
 void displaySwapMenu(int selected_pxm);

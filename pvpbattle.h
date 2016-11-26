@@ -46,4 +46,7 @@ int integerServerFSM( int integerSent );
 //client finite state machine to exchange player attack id and enemy hp
 int integerClientFSM( int integerSent );
 
+// complete fxn that uses fightmode and other fxns to conduct a pvp battle
+void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm);
+
 #endif
