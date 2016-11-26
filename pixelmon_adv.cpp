@@ -186,6 +186,7 @@ int main() {
 	loadAllPixelmon();
 
 	pixelmon player_pxm;
+
 	// pixelmon enemy_pxm;
 	// generatePixelmon(&player_pxm);
 	// printPixelmon(&player_pxm);

@@ -21,24 +21,29 @@
 */
 bool wait_on_serial3( uint8_t nbytes, long timeout );
 
-/** Writes an int to Serial3, starting from the least-significant
-* and finishing with the most significant byte.
-*/
+// send an int to other arduino beginning with LSB
+// must first typecast num to uint due to how the bitshift works for neg. nums
 void int_to_serial3(int num);
 
-/** Reads an int from Serial3, starting from the least-significant
-* and finishing with the most significant byte.
-*/
+// read an int from other arduino starting with LSB
 int int_from_serial3();
 
+// call int_from_serial3 4 times to send all pixelmon data
 void pixelmon_to_serial3(pixelmon px);
 
+// call int_from_serial3 4 times to get all pixelmon data
 pixelmon pixelmon_from_serial3();
 
 //server finite state machine to exchange player pixelmon and enemy pixelmon
-pixelmon serverFSM( pixelmon player_pxm );
+pixelmon pixelmonServerFSM( pixelmon player_pxm );
 
 //client finite state machine to exchange player pixelmon and enemy pixelmon
-pixelmon clientFSM( pixelmon player_pxm );
+pixelmon pixelmonClientFSM( pixelmon player_pxm );
+
+//server finite state machine to exchange player attack id and enemy hp
+int integerServerFSM( int integerSent );
+
+//client finite state machine to exchange player attack id and enemy hp
+int integerClientFSM( int integerSent );
 
 #endif
