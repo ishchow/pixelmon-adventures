@@ -191,11 +191,9 @@ int main() {
 	// generatePixelmon(&player_pxm);
 	// printPixelmon(&player_pxm);
 	// if (digitalRead(13) == HIGH) {
-	// 	enemy_pxm = serverFSM(player_pxm);
-	// 	// enemy_pxm = clientKey(player_pxm);
+	// 	enemy_pxm = pixelmonServerFSM(player_pxm);
 	// } else {
-	// 	enemy_pxm = clientFSM(player_pxm);
-	// 	// enemy_pxm = serverKey(player_pxm);
+	// 	enemy_pxm = pixelmonClientFSM(player_pxm);
 	// }
 	// printPixelmon(&enemy_pxm);
 	// while (true) {}
