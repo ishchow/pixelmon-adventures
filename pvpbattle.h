@@ -41,8 +41,4 @@ pixelmon serverFSM( pixelmon player_pxm );
 //client finite state machine to exchange player pixelmon and enemy pixelmon
 pixelmon clientFSM( pixelmon player_pxm );
 
-pixelmon clientKey(pixelmon player_pxm);
-
-pixelmon serverKey(pixelmon player_pxm);
-
 #endif

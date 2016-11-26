@@ -186,18 +186,18 @@ int main() {
 	loadAllPixelmon();
 
 	pixelmon player_pxm;
-	pixelmon enemy_pxm;
-	generatePixelmon(&player_pxm);
-	printPixelmon(&player_pxm);
-	if (digitalRead(13) == HIGH) {
-		enemy_pxm = serverFSM(player_pxm);
-		// enemy_pxm = clientKey(player_pxm);
-	} else {
-		enemy_pxm = clientFSM(player_pxm);
-		// enemy_pxm = serverKey(player_pxm);
-	}
-	printPixelmon(&enemy_pxm);
-	while (true) {}
+	// pixelmon enemy_pxm;
+	// generatePixelmon(&player_pxm);
+	// printPixelmon(&player_pxm);
+	// if (digitalRead(13) == HIGH) {
+	// 	enemy_pxm = serverFSM(player_pxm);
+	// 	// enemy_pxm = clientKey(player_pxm);
+	// } else {
+	// 	enemy_pxm = clientFSM(player_pxm);
+	// 	// enemy_pxm = serverKey(player_pxm);
+	// }
+	// printPixelmon(&enemy_pxm);
+	// while (true) {}
 
 	updateMap();
 
@@ -206,9 +206,9 @@ int main() {
 		printPixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
 		// this line is odd; causes monster health to go to 0
-		// if ( i != MAX_OWNED - 2) {
-		// 	ownedPixelmon[i].health = 0;
-		// }
+		if ( i != MAX_OWNED - 2) {
+			ownedPixelmon[i].health = 0;
+		}
 	}
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 
