@@ -289,3 +289,148 @@ int integerClientFSM( int integerSent ) {
     }
   }
 }
+
+// complete fxn that uses fightmode and other fxns to conduct a pvp battle
+void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
+  uint8_t game_mode = 1;
+  int player_pxm_x = 0, player_pxm_y = 0;
+  int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
+  drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
+  drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
+  displayPixelmonStats(player_pxm, wild_pxm);
+  int selected_option = 0;
+  int last_selected_option = 0;
+  // battle menu choices
+  const char *battle_options[] = {"Fight", "Swap"};
+  int selected_attack = 0;
+  int last_selected_attack = 0;
+  int enemy_selected_attack = 0;
+  //selected pixelmon var.
+  int player_pxm_temp_health = 0;
+  int selected_pxm = 0;
+  int last_selected_pxm = 0;
+  pixelmon *last_player_pxm = player_pxm;
+  // turns var.
+  bool player_pxm_turn = true;
+  char message[64] = {0};
+  bool flee = false;
+  bool capture = false;
+  // Select pixelmon before fight
+  sprintf(message, "Please select a pixelmon!");
+  showMessage(message);
+  while(!allOwnedPixelmonDead()) { // Pick alive pixelmon
+    swapMode(&player_pxm, player_pxm_x, player_pxm_y,
+      &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
+      if (player_pxm->health > 0) break;
+    }
+    //continue battle if one of 2 conditions are met
+    while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0) {
+      if (player_pxm_turn) { // Player
+        uint8_t max_sel = 2;
+        displayBattleMenu(battle_options, selected_option);
+        while (true) {
+          int press = scanJoystick(&selected_option, game_mode, max_sel);
+          if (last_selected_option != selected_option) {
+            updateBattleMenu(battle_options, selected_option, last_selected_option);
+            last_selected_option = selected_option;
+          }
+          if (press == LOW) {
+            press = HIGH;
+            last_selected_option = selected_option;
+            eraseMenu();
+            break;
+          }
+        }
+        // call fxns based on choice made by player
+        if (selected_option == 0) { // Fight
+          fightMode(player_pxm, player_pxm_x, player_pxm_y,
+            wild_pxm, wild_pxm_x, wild_pxm_y,
+            &selected_attack, &last_selected_attack, message);
+            if (digitalRead(13) == HIGH) {
+              integerServerFSM(selected_attack);
+              integerServerFSM(wild_pxm->health);
+            }
+            else {
+              integerClientFSM(selected_attack);
+              integerClientFSM(wild_pxm->health);
+            }
+          } else if (selected_option == 1) { // Swap
+            while(!allOwnedPixelmonDead()) {
+              swapMode(&player_pxm, player_pxm_x, player_pxm_y,
+                &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
+                if (player_pxm->health > 0) break;
+              }
+              if (digitalRead(13) == HIGH) {
+            		*wild_pxm = pixelmonServerFSM(*player_pxm);
+            	} else {
+            		*wild_pxm = pixelmonClientFSM(*player_pxm);
+            	}
+            }
+            player_pxm_turn = false;
+          }
+		else { // Enemy Pixelmon turn
+      int attack_id = 0;
+      if (digitalRead(13) == HIGH) {
+        attack_id = integerServerFSM(-1);
+      }
+      else {
+        attack_id = integerClientFSM(selected_attack);
+      }
+			// enemy attacks
+			sprintf(message, "Enemy %s attacks with %s",
+					allPixelmon[wild_pxm->pixelmon_id].name,
+					allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
+			showMessage(message);
+			// calc damage
+      if (digitalRead(13) == HIGH) {
+        player_pxm_temp_health = integerServerFSM(-1);
+      }
+      else {
+        player_pxm_temp_health = integerClientFSM(-1);
+      }
+			if (player_pxm_temp_health < player_pxm->health) {
+        player_pxm->health = player_pxm_temp_health;
+				sprintf(message, "%s is hit!", allPixelmon[player_pxm->pixelmon_id].name);
+				showMessage(message);
+				hitAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK);
+				updateHealth(player_pxm, wild_pxm, 'p');
+			} else {
+				sprintf(message, "%s dodges!", allPixelmon[player_pxm->pixelmon_id].name);
+				showMessage(message);
+				dodgeAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK, 'p');
+			}
+			player_pxm_turn = true;
+		}
+		// actions for when a pixelmon (player or enemy) is fainted
+		if (wild_pxm->health <= 0) {
+			sprintf(message, "Enemy %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
+			showMessage(message);
+			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
+			player_pxm->xp += (wild_pxm->level)*10;
+			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
+			showMessage(message);
+			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
+			eraseMenu();
+      if (digitalRead(13) == HIGH) {
+        *wild_pxm = pixelmonserverFSM(*player_pxm);
+      } else {
+        *wild_pxm = pixelmonclientFSM(*player_pxm);
+      }
+		} else if (player_pxm->health <= 0) {
+			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
+			showMessage(message);
+			deathAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_BLACK);
+			eraseMenu();
+			while(!allOwnedPixelmonDead()) {
+				swapMode(&player_pxm, player_pxm_x, player_pxm_y,
+					 	 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
+				if (player_pxm->health > 0) break;
+			}
+      if (digitalRead(13) == HIGH) {
+        *wild_pxm = pixelmonserverFSM(*player_pxm);
+      } else {
+        *wild_pxm = pixelmonclientFSM(*player_pxm);
+      }
+		}
+	}
+}

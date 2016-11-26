@@ -447,24 +447,19 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	displayPixelmonStats(player_pxm, wild_pxm);
 	int selected_option = 0;
 	int last_selected_option = 0;
-
 	// battle menu choices
 	const char *battle_options[] = {"Fight", "Flee", "Swap", "Capture"};
-
 	int selected_attack = 0;
 	int last_selected_attack = 0;
-
 	//selected pixelmon var.
 	int selected_pxm = 0;
 	int last_selected_pxm = 0;
 	pixelmon *last_player_pxm = player_pxm;
-
 	// turns var.
 	bool player_pxm_turn = true;
 	char message[64] = {0};
 	bool flee = false;
     bool capture = false;
-
 	// Select pixelmon before fight
 	sprintf(message, "Please select a pixelmon!");
 	showMessage(message);
@@ -473,7 +468,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
 		 if (player_pxm->health > 0) break;
 	}
-
 	//continue battle if one of 4 conditions are met
 	while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0 && !flee && !capture) {
 		if (player_pxm_turn) { // Player
@@ -553,7 +547,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			}
 			player_pxm_turn = true;
 		}
-
 		// actions for when a pixelmon (player or wild) is fainted
 		if (wild_pxm->health <= 0) {
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
