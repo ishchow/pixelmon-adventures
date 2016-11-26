@@ -190,9 +190,9 @@ int main() {
 	// generatePixelmon(&player_pxm);
 	// printPixelmon(&player_pxm);
 	// if (digitalRead(13) == HIGH) {
-	// 	enemy_pxm = serverFSM(player_pxm);
+	// 	enemy_pxm = pixelmonServerFSM(player_pxm);
 	// } else {
-	// 	enemy_pxm = clientFSM(player_pxm);
+	// 	enemy_pxm = pixelmonClientFSM(player_pxm);
 	// }
 	// printPixelmon(&enemy_pxm);
 	// while (true) {}
@@ -201,13 +201,13 @@ int main() {
 
 	for (int i = 0; i < MAX_OWNED - 1; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
-		printPixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
 		// this line is odd; causes monster health to go to 0
 		if ( i != MAX_OWNED - 2) {
 			ownedPixelmon[i].health = 0;
 		}
 	}
+	printPixelmon(&ownedPixelmon[i]);
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 
 	int startTime = millis();

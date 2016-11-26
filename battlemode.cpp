@@ -307,12 +307,12 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 }
 
 // show menu for fight, flee, capture, swap
-void displayBattleMenu(const char *options[], int selected_option) {
+void displayBattleMenu(const char *options[], const int num_options, int selected_option) {
 	const int TXT_SIZE = 2;
-	const int FIRST_ENTRY = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
+	const int FIRST_ENTRY = (TFT_HEIGHT-1) - num_options*8*TXT_SIZE;
 	tft.setTextSize(TXT_SIZE);
 	tft.setCursor(0, FIRST_ENTRY);
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < num_options; ++i) {
 		if (i != selected_option) tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 		else tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
 		tft.print(options[i]);
@@ -321,10 +321,12 @@ void displayBattleMenu(const char *options[], int selected_option) {
 }
 
 // highlights selected battle menu option
-void updateBattleMenu(const char *options[], int selected_option, int last_selected_option) {
+void updateBattleMenu(const char *options[], const int num_options,
+					  int selected_option, int last_selected_option)
+{
 	const int TXT_SIZE = 2;
 	tft.setTextSize(TXT_SIZE);
-	const int FIRST_ENTRY = (TFT_HEIGHT-1) - 4*8*TXT_SIZE;
+	const int FIRST_ENTRY = (TFT_HEIGHT-1) - num_options*8*TXT_SIZE;
 	// deselect
 	tft.setCursor(0, FIRST_ENTRY + last_selected_option*TXT_SIZE*8);
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
@@ -449,6 +451,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int last_selected_option = 0;
 	// battle menu choices
 	const char *battle_options[] = {"Fight", "Flee", "Swap", "Capture"};
+	const int num_battle_options = sizeof(battle_options)/sizeof(battle_options[0]);
 	int selected_attack = 0;
 	int last_selected_attack = 0;
 	//selected pixelmon var.
@@ -471,12 +474,12 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	//continue battle if one of 4 conditions are met
 	while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0 && !flee && !capture) {
 		if (player_pxm_turn) { // Player
-            uint8_t max_sel = 4;
-			displayBattleMenu(battle_options, selected_option);
+			displayBattleMenu(battle_options, num_battle_options, selected_option);
 			while (true) {
-				int press = scanJoystick(&selected_option, game_mode, max_sel);
+				int press = scanJoystick(&selected_option, game_mode, num_battle_options);
 				if (last_selected_option != selected_option) {
-					updateBattleMenu(battle_options, selected_option, last_selected_option);
+					updateBattleMenu(battle_options, num_battle_options,
+									 selected_option, last_selected_option);
 					last_selected_option = selected_option;
 				}
 				if (press == LOW) {

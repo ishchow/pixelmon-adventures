@@ -412,9 +412,9 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
 			eraseMenu();
       if (digitalRead(13) == HIGH) {
-        *wild_pxm = pixelmonserverFSM(*player_pxm);
+        *wild_pxm = pixelmonServerFSM(*player_pxm);
       } else {
-        *wild_pxm = pixelmonclientFSM(*player_pxm);
+        *wild_pxm = pixelmonClientFSM(*player_pxm);
       }
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
@@ -427,9 +427,9 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				if (player_pxm->health > 0) break;
 			}
       if (digitalRead(13) == HIGH) {
-        *wild_pxm = pixelmonserverFSM(*player_pxm);
+        *wild_pxm = pixelmonServerFSM(*player_pxm);
       } else {
-        *wild_pxm = pixelmonclientFSM(*player_pxm);
+        *wild_pxm = pixelmonClientFSM(*player_pxm);
       }
 		}
 	}
