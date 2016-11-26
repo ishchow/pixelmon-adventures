@@ -206,8 +206,8 @@ int main() {
 		if ( i != MAX_OWNED - 2) {
 			ownedPixelmon[i].health = 0;
 		}
+		printPixelmon(&ownedPixelmon[i]);
 	}
-	printPixelmon(&ownedPixelmon[i]);
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 
 	int startTime = millis();
