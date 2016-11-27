@@ -238,7 +238,9 @@ int main() {
 					}
 				}
 				if (PVP_choice == 0) {
-					pixelmon enemy_pxm;
+					// Set garbage values in order to correctly update the enemy_pxm
+					// when calling updatePixelmon() in PVPbattleMode()
+					pixelmon enemy_pxm = {-1, -1, -1, -1};
 					tft.fillScreen(ST7735_BLACK);
 					PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
 					updateMap();updateScreen();

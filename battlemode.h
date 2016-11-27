@@ -38,16 +38,16 @@ void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint1
 void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16_t bg_color);
 
 void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
-					uint16_t bg_color, char attacked_pxm);
+										uint16_t bg_color, char attacked_pxm);
 
 // Display player pixelmon stats to left side of screen
 void displayPlayerPixelmonStats(pixelmon *player_pxm) ;
 
 // Display wild pixelmon stats to right side of screen
-void displayEnemyPixelmonStats(pixelmon *wild_pxm);
+void displayEnemyPixelmonStats(pixelmon *enemy_pxm);
 
 // display new health on screen
-void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit_pxm);
+void updateHealth(pixelmon *player_pxm, pixelmon *enemy_pxm, char hit_pxm);
 
 // print fight/attack moves, based on position of 1st move
 void displayFightMenu(pixelmon *player_pxm, int selected_attack);
@@ -72,37 +72,37 @@ void updateMoveStats(pixelmon *player_pxm, int selected_attack);
 
 // fxn for the menu solely for attacks
 void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
-			   pixelmon *wild_pxm, int wild_pxm_x, int wild_pxm_y,
-			   int *selected_attack, int *last_selected_attack, char* message);
+			   			 pixelmon *enemy_pxm, int enemy_pxm_x, int enemy_pxm_y,
+			   	 		 int *selected_attack, int *last_selected_attack, bool pvpMode, char* message);
 
 // show menu for fight, flee, capture, swap on screen
 void displayBattleMenu(const char *options[], const int num_options, int selected_option);
 
 // highlights selected battle menu option
 void updateBattleMenu(const char *options[], const int num_options,
-					  int selected_option, int last_selected_option);
+					  					int selected_option, int last_selected_option);
 
 // displays list of all owned pixelmon to swap from
 void displaySwapMenu(int selected_pxm);
 
 // highlights selected pixelmon in swap menu
 void updateSwapMenu(int selected_pxm, int last_selected_pxm,
-					pixelmon *player_pxm, pixelmon *last_player_pxm);
+										pixelmon *player_pxm, pixelmon *last_player_pxm);
 
 // display stats and bitmap of selected pixelmon
 void updatePixelmon(int player_pxm_x, int player_pxm_y,
-				    pixelmon *player_pxm, pixelmon *last_player_pxm,
-						bool isEnemy);
+								    pixelmon *player_pxm, pixelmon *last_player_pxm,
+										bool isEnemy);
 
 // makes pixelmon get xp and level up
 void levelUpPixelmon(pixelmon *player_pxm, char *message);
 
 // fxn for swap pixelmon
 void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
-		  	  pixelmon **last_player_pxm, int* selected_pxm, int* last_selected_pxm,
-			  	char *message);
+				  	  pixelmon **last_player_pxm, int* selected_pxm, int* last_selected_pxm,
+					  	char *message);
 
 // fxn with menu for fight, flee, swap, capture
-void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm);
+void battleMode(pixelmon *player_pxm, pixelmon *enemy_pxm);
 
 #endif

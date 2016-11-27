@@ -273,10 +273,10 @@ int integerClientFSM( int integerSent ) {
 }
 
 // complete fxn that uses fightmode and other fxns to conduct a pvp battle
-void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
+void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
   uint8_t game_mode = 1;
   int player_pxm_x = 0, player_pxm_y = 0;
-  int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
+  int enemy_pxm_x = (TFT_WIDTH - 1) - 32, enemy_pxm_y = 0;
   drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
   displayPlayerPixelmonStats(player_pxm);
   int selected_option = 0;
@@ -292,34 +292,36 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
   int selected_pxm = 0;
   int last_selected_pxm = 0;
   pixelmon *last_player_pxm = player_pxm;
-  pixelmon *last_wild_pxm = wild_pxm;
+  pixelmon *last_enemy_pxm = enemy_pxm;
   // turns var.
   bool player_pxm_turn = true;
   char message[64] = {0};
   bool flee = false;
   bool capture = false;
   bool isEnemy = true; // Set for when updating enemy pixelmon
+  bool pvpMode = true; // Set whether "Wild ... dodges" or "Enemy ... dodges"
+                         // is displayed
   // Select pixelmon before fight
   sprintf(message, "Please select a pixelmon!");
   showMessage(message);
   while(!allOwnedPixelmonDead()) { // Pick alive pixelmon
     swapMode(&player_pxm, player_pxm_x, player_pxm_y,
-      &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
+             &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
       if (player_pxm->health > 0) break;
     }
     if (digitalRead(13) == HIGH) {
-        last_wild_pxm = wild_pxm;
-        *wild_pxm = pixelmonServerFSM(*player_pxm);
+        last_enemy_pxm = enemy_pxm;
+        *enemy_pxm = pixelmonServerFSM(*player_pxm);
         player_pxm_turn = false;
     } else {
-        last_wild_pxm = wild_pxm;
-        *wild_pxm = pixelmonClientFSM(*player_pxm);
+        last_enemy_pxm = enemy_pxm;
+        *enemy_pxm = pixelmonClientFSM(*player_pxm);
         player_pxm_turn = true;
     }
-    displayEnemyPixelmonStats(wild_pxm);
-    updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
+    displayEnemyPixelmonStats(enemy_pxm);
+    updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
     //continue battle if one of 2 conditions are met
-    while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0) {
+    while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && enemy_pxm->health > 0) {
       if (player_pxm_turn) { // Player
         uint8_t max_sel = 2;
         displayBattleMenu(battle_options, num_battle_options, selected_option);
@@ -339,17 +341,17 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
         // call fxns based on choice made by player
         if (selected_option == 0) { // Fight
           fightMode(player_pxm, player_pxm_x, player_pxm_y,
-            wild_pxm, wild_pxm_x, wild_pxm_y,
-            &selected_attack, &last_selected_attack, message);
+                    enemy_pxm, enemy_pxm_x, enemy_pxm_y,
+                    &selected_attack, &last_selected_attack, pvpMode, message);
             if (digitalRead(13) == HIGH) {
               integerServerFSM(-100);
               integerServerFSM(selected_attack);
-              integerServerFSM(wild_pxm->health);
+              integerServerFSM(enemy_pxm->health);
             }
             else {
               integerClientFSM(-100);
               integerClientFSM(selected_attack);
-              integerClientFSM(wild_pxm->health);
+              integerClientFSM(enemy_pxm->health);
             }
           } else if (selected_option == 1) { // Swap
             while(!allOwnedPixelmonDead()) {
@@ -359,14 +361,14 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
               }
               if (digitalRead(13) == HIGH) {
                 integerServerFSM(-200);
-                last_wild_pxm = wild_pxm;
-            		*wild_pxm = pixelmonServerFSM(*player_pxm);
+                last_enemy_pxm = enemy_pxm;
+            		*enemy_pxm = pixelmonServerFSM(*player_pxm);
             	} else {
                 integerClientFSM(-200);
-                last_wild_pxm = wild_pxm;
-            		*wild_pxm = pixelmonClientFSM(*player_pxm);
+                last_enemy_pxm = enemy_pxm;
+            		*enemy_pxm = pixelmonClientFSM(*player_pxm);
             	}
-              updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
+              updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
             }
             player_pxm_turn = false;
           }
@@ -383,15 +385,15 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
       //if enemy choose to swap
       if (incoming_enemy_choice == -200) {
         if (digitalRead(13) == HIGH) {
-            last_wild_pxm = wild_pxm;
-            *wild_pxm = pixelmonServerFSM(*player_pxm);
+            last_enemy_pxm = enemy_pxm;
+            *enemy_pxm = pixelmonServerFSM(*player_pxm);
         } else {
-            last_wild_pxm = wild_pxm;
-            *wild_pxm = pixelmonClientFSM(*player_pxm);
+            last_enemy_pxm = enemy_pxm;
+            *enemy_pxm = pixelmonClientFSM(*player_pxm);
         }
         player_pxm_turn = true;
-        updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
-        continue;
+        updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
+        continue; // Skip attack logic
       }
       // if enemy attack
       if (digitalRead(13) == HIGH) {
@@ -401,8 +403,8 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
         attack_id = integerClientFSM(-1);
       }
 			sprintf(message, "Enemy %s attacks with %s",
-					allPixelmon[wild_pxm->pixelmon_id].name,
-					allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
+					allPixelmon[enemy_pxm->pixelmon_id].name,
+					allPixelmon[enemy_pxm->pixelmon_id].attacks[attack_id].name);
 			showMessage(message);
 			// calc damage
       if (digitalRead(13) == HIGH) {
@@ -416,7 +418,7 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				sprintf(message, "%s is hit!", allPixelmon[player_pxm->pixelmon_id].name);
 				showMessage(message);
 				hitAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE, ST7735_BLACK);
-				updateHealth(player_pxm, wild_pxm, 'p');
+				updateHealth(player_pxm, enemy_pxm, 'p');
 			} else {
 				sprintf(message, "%s dodges!", allPixelmon[player_pxm->pixelmon_id].name);
 				showMessage(message);
@@ -425,24 +427,24 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			player_pxm_turn = true;
 		}
 		// actions for when a pixelmon (player or enemy) is fainted
-		if (wild_pxm->health <= 0) {
-			sprintf(message, "Enemy %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
+		if (enemy_pxm->health <= 0) {
+			sprintf(message, "Enemy %s fainted!", allPixelmon[enemy_pxm->pixelmon_id].name);
 			showMessage(message);
-			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
-			player_pxm->xp += (wild_pxm->level)*10;
-			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
+			deathAnimation(enemy_pxm, enemy_pxm_x, enemy_pxm_y, ST7735_BLACK);
+			player_pxm->xp += (enemy_pxm->level)*10;
+			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*enemy_pxm->level);
 			showMessage(message);
 			if (player_pxm->xp >= 100) {levelUpPixelmon(player_pxm, message);}
       updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, !isEnemy);
 			eraseMenu();
       if (digitalRead(13) == HIGH) {
-          last_wild_pxm = wild_pxm;
-          *wild_pxm = pixelmonServerFSM(*player_pxm);
+          last_enemy_pxm = enemy_pxm;
+          *enemy_pxm = pixelmonServerFSM(*player_pxm);
       } else {
-          last_wild_pxm = wild_pxm;
-          *wild_pxm = pixelmonClientFSM(*player_pxm);
+          last_enemy_pxm = enemy_pxm;
+          *enemy_pxm = pixelmonClientFSM(*player_pxm);
       }
-      updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
+      updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
 			showMessage(message);
@@ -451,17 +453,17 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
       // swapping out fainted pixelmon
 			while(!allOwnedPixelmonDead()) {
 				swapMode(&player_pxm, player_pxm_x, player_pxm_y,
-					 	 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
+					 	     &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
 				if (player_pxm->health > 0) break;
 			}
       if (digitalRead(13) == HIGH) {
-        last_wild_pxm = wild_pxm;
-        *wild_pxm = pixelmonServerFSM(*player_pxm);
+        last_enemy_pxm = enemy_pxm;
+        *enemy_pxm = pixelmonServerFSM(*player_pxm);
       } else {
-        last_wild_pxm = wild_pxm;
-        *wild_pxm = pixelmonClientFSM(*player_pxm);
+        last_enemy_pxm = enemy_pxm;
+        *enemy_pxm = pixelmonClientFSM(*player_pxm);
       }
-      updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
+      updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
 		}
 	}
 }
