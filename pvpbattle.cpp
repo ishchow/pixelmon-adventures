@@ -142,6 +142,7 @@ pixelmon pixelmonClientFSM( pixelmon player_pxm ) {
   long timeout = 1000;
   pixelmon enemy_pxm;
   while (true) {
+    Serial.print("pixcurrstate: ");Serial.println(curr_state);
     // START state
     if (curr_state == START) {
       Serial3.write('C');
@@ -247,6 +248,7 @@ int integerClientFSM( int integerSent ) {
   long timeout = 1000;
   int integerReceived = 0;
   while (true) {
+    Serial.print("intcurrstate: ");Serial.println(curr_state);
     // START state
     if (curr_state == START) {
       Serial3.write('C');
@@ -340,10 +342,12 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
             wild_pxm, wild_pxm_x, wild_pxm_y,
             &selected_attack, &last_selected_attack, message);
             if (digitalRead(13) == HIGH) {
+              integerServerFSM(-100);
               integerServerFSM(selected_attack);
               integerServerFSM(wild_pxm->health);
             }
             else {
+              integerClientFSM(-100);
               integerClientFSM(selected_attack);
               integerClientFSM(wild_pxm->health);
             }
@@ -354,9 +358,11 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
                 if (player_pxm->health > 0) break;
               }
               if (digitalRead(13) == HIGH) {
+                integerServerFSM(-200);
                 last_wild_pxm = wild_pxm;
             		*wild_pxm = pixelmonServerFSM(*player_pxm);
             	} else {
+                integerClientFSM(-200);
                 last_wild_pxm = wild_pxm;
             		*wild_pxm = pixelmonClientFSM(*player_pxm);
             	}
@@ -365,14 +371,33 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
             player_pxm_turn = false;
           }
 		else { // Enemy Pixelmon turn
+      int incoming_enemy_choice = 0;
       int attack_id = 0;
+      //get enemy choice fight or swap
+      if (digitalRead(13) == HIGH) {
+        incoming_enemy_choice = integerServerFSM(-1);
+      }
+      else {
+        incoming_enemy_choice = integerClientFSM(-1);
+      }
+      //if enemy choose to swap
+      if (incoming_enemy_choice == -200) {
+        if (digitalRead(13) == HIGH) {
+            last_wild_pxm = wild_pxm;
+            *wild_pxm = pixelmonServerFSM(*player_pxm);
+        } else {
+            last_wild_pxm = wild_pxm;
+            *wild_pxm = pixelmonClientFSM(*player_pxm);
+        }
+        continue;
+      }
+      // if enemy attack
       if (digitalRead(13) == HIGH) {
         attack_id = integerServerFSM(-1);
       }
       else {
         attack_id = integerClientFSM(-1);
       }
-			// enemy attacks
 			sprintf(message, "Enemy %s attacks with %s",
 					allPixelmon[wild_pxm->pixelmon_id].name,
 					allPixelmon[wild_pxm->pixelmon_id].attacks[attack_id].name);
