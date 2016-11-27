@@ -46,10 +46,10 @@ void healAllOwnedPixelmon() {
 // fxn to show pixelmon stats on serial-mon
 void printPixelmon(pixelmon *px) {
     Serial.println();
-    Serial.print("Pixelmon name: "); Serial.println(allPixelmon[px->pixelmon_id].name);
-    Serial.print("\tHealth: "); Serial.println(px->health);
-    Serial.print("\tLvl: "); Serial.println(px->level);
-    Serial.print("\tXP: "); Serial.println(px->xp);
+    Serial.print(F("Pixelmon name: ")); Serial.println(allPixelmon[px->pixelmon_id].name);
+    Serial.print(F("\tHealth: ")); Serial.println(px->health);
+    Serial.print(F("\tLvl: ")); Serial.println(px->level);
+    Serial.print(F("\tXP: ")); Serial.println(px->xp);
     Serial.println();
 }
 
@@ -140,8 +140,8 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 		}
 	}
 
-// print stats to tft
-void displayPixelmonStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
+// Display player pixelmon stats to left side of screen
+void displayPlayerPixelmonStats(pixelmon *player_pxm) {
 	tft.setTextSize(1);
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	tft.setTextWrap(false);
@@ -150,7 +150,14 @@ void displayPixelmonStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	tft.print(allPixelmon[player_pxm->pixelmon_id].name); tft.print(F("\n"));
 	tft.print(F("Life: ")); tft.print(player_pxm->health); tft.print(F("\n"));
 	tft.print(F("Lvl: ")); tft.print(player_pxm->level); tft.print(F("\n"));
-	tft.print(F("XP: ")); tft.print(player_pxm->xp);
+	tft.print(F("EXP: ")); tft.print(player_pxm->xp);
+}
+
+// Display wild pixelmon stats to right side of screen
+void displayEnemyPixelmonStats(pixelmon *wild_pxm) {
+	tft.setTextSize(1);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+	tft.setTextWrap(false);
 	// Wild pixelmon:
 	tft.setCursor(TFT_WIDTH/2, 33);
 	tft.print(allPixelmon[wild_pxm->pixelmon_id].name);
@@ -159,7 +166,7 @@ void displayPixelmonStats(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	tft.setCursor(TFT_WIDTH/2, 33+16);
 	tft.print(F("Lvl: ")); tft.print(wild_pxm->level);
 	tft.setCursor(TFT_WIDTH/2, 33+24);
-	tft.print(F("XP: ")); tft.print(wild_pxm->xp);
+	tft.print(F("EXP: ")); tft.print(wild_pxm->xp);
 }
 
 // display new health on screen
@@ -239,11 +246,11 @@ void displayMoveStats(pixelmon *player_pxm, int selected_attack) {
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	// damage
 	tft.setCursor(0, 33 + 6*7 + 1);
-	tft.print("Dmg: ");
+	tft.print(F("Dmg: "));
 	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].dmg);
 	// accuracy
 	tft.setCursor(TFT_WIDTH/2, 33 + 6*7 + 1);
-	tft.print("Acc: ");
+	tft.print(F("Acc: "));
 	tft.print(75);
 }
 
@@ -269,8 +276,8 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 			   pixelmon *wild_pxm, int wild_pxm_x, int wild_pxm_y,
 			   int *selected_attack, int *last_selected_attack, char* message)
 {
-    uint8_t game_mode = 1;
-    uint8_t max_sel = 4;
+	uint8_t game_mode = 1;
+	uint8_t max_sel = 4;
 	displayFightMenu(player_pxm, *selected_attack);
 	displayMoveStats(player_pxm, *selected_attack);
 	while (true) { //selection of attack while loop
@@ -290,8 +297,8 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 	}
 	//show the attack selected
 	sprintf(message, "%s attacks with %s",
-			allPixelmon[player_pxm->pixelmon_id].name,
-			allPixelmon[player_pxm->pixelmon_id].attacks[*selected_attack].name);
+	allPixelmon[player_pxm->pixelmon_id].name,
+	allPixelmon[player_pxm->pixelmon_id].attacks[*selected_attack].name);
 	showMessage(message);
 	// do the attack calc.
 	bool wild_pxm_hit = execAttack(player_pxm, wild_pxm, *selected_attack);
@@ -312,6 +319,7 @@ void displayBattleMenu(const char *options[], const int num_options, int selecte
 	const int FIRST_ENTRY = (TFT_HEIGHT-1) - num_options*8*TXT_SIZE;
 	tft.setTextSize(TXT_SIZE);
 	tft.setCursor(0, FIRST_ENTRY);
+	tft.setTextWrap(false);
 	for (int i = 0; i < num_options; ++i) {
 		if (i != selected_option) tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 		else tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
@@ -326,6 +334,7 @@ void updateBattleMenu(const char *options[], const int num_options,
 {
 	const int TXT_SIZE = 2;
 	tft.setTextSize(TXT_SIZE);
+	tft.setTextWrap(false);
 	const int FIRST_ENTRY = (TFT_HEIGHT-1) - num_options*8*TXT_SIZE;
 	// deselect
 	tft.setCursor(0, FIRST_ENTRY + last_selected_option*TXT_SIZE*8);
@@ -379,7 +388,7 @@ void updatePixelmon(int player_pxm_x, int player_pxm_y,
 	int cursor_x = 0;
 	if (isEnemy) cursor_x = TFT_WIDTH/2;
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-	tft.setTextWrap(true);
+	tft.setTextWrap(false);
 	//bmp of pixelmon
 	// if (player_pxm->pixelmon_id != last_player_pxm->pixelmon_id) {
 		erasePixelmon(player_pxm_x, player_pxm_y, ST7735_BLACK);
@@ -398,8 +407,8 @@ void updatePixelmon(int player_pxm_x, int player_pxm_y,
 	tft.fillRect(cursor_x + 6*5, 33+16, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK); // Clear previous level
 	tft.print(player_pxm->level);
 	//xp
-	tft.setCursor(cursor_x + 5*5, 33+24); // After "XP: "
-	tft.fillRect(cursor_x + 5*5, 33+24, TFT_WIDTH/2 - 5*5, 7, ST7735_BLACK); // Clear previous xp
+	tft.setCursor(cursor_x + 6*5, 33+24); // After "EXP: "
+	tft.fillRect(cursor_x + 6*5, 33+24, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK); // Clear previous xp
 	tft.print(player_pxm->xp);
 }
 
@@ -424,10 +433,9 @@ void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 		if (*last_selected_pxm != *selected_pxm) {
 			*player_pxm = &ownedPixelmon[*selected_pxm];
 			updateSwapMenu(*selected_pxm, *last_selected_pxm,
-						   *player_pxm, *last_player_pxm);
+			*player_pxm, *last_player_pxm);
 			bool isEnemy = false;
-			updatePixelmon(player_pxm_x, player_pxm_y,
-						   *player_pxm, *last_player_pxm, isEnemy);
+			updatePixelmon(player_pxm_x, player_pxm_y, *player_pxm, *last_player_pxm, isEnemy);
 			*last_selected_pxm = *selected_pxm;
 			*last_player_pxm = *player_pxm;
 		}
@@ -451,7 +459,9 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
 	drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
 	drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
-	displayPixelmonStats(player_pxm, wild_pxm);
+	// displayPixelmonStats(player_pxm, wild_pxm);
+	displayPlayerPixelmonStats(player_pxm);
+	displayEnemyPixelmonStats(wild_pxm);
 	int selected_option = 0;
 	int last_selected_option = 0;
 	// battle menu choices
@@ -467,7 +477,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	bool player_pxm_turn = true;
 	char message[64] = {0};
 	bool flee = false;
-    bool capture = false;
+  bool capture = false;
 	// Select pixelmon before fight
 	sprintf(message, "Please select a pixelmon!");
 	showMessage(message);
@@ -505,36 +515,35 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			} else if (selected_option == 2) { // Swap
 				while(!allOwnedPixelmonDead()) {
 					swapMode(&player_pxm, player_pxm_x, player_pxm_y,
-							 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
-					 if (player_pxm->health > 0) break;
-				}
-		    } else if (selected_option == 3 && num_pxm_owned == 6) {
+						&last_player_pxm, &selected_pxm, &last_selected_pxm, message);
+						if (player_pxm->health > 0) break;
+					}
+			} else if (selected_option == 3 && num_pxm_owned == 6) {
 				sprintf(message, "You can only have %d pixelmon!", MAX_OWNED);
 				showMessage(message);
 			} else if (selected_option == 3 && num_pxm_owned < 6) { // Capture
-                sprintf(message, "You throw a pokeball at wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
-                showMessage(message);
-								erasePixelmon(wild_pxm_x, wild_pxm_y, ST7735_BLACK);
-								delay(500);
-								capture = random(101) <= 25;
-								if (capture) {
-									sprintf(message, "You captured wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
-									showMessage(message);
-									num_pxm_owned = constrain(num_pxm_owned + 1, 0, MAX_OWNED);
-									// Add captured pixelmon to next empty slot
-									ownedPixelmon[num_pxm_owned-1] = *wild_pxm;
-                } else {
-                    sprintf(message, "Wild %s escaped!", allPixelmon[wild_pxm->pixelmon_id].name);
-                    showMessage(message);
-                    drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_MAGENTA);
-                    delay(500);
-                    drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
-									}
-								}
-								// end player turn
-								player_pxm_turn = false;
-							}
-		else { // Wild Pokemon turn
+				sprintf(message, "You throw a pokeball at wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
+				showMessage(message);
+				erasePixelmon(wild_pxm_x, wild_pxm_y, ST7735_BLACK);
+				delay(500);
+				capture = random(101) <= 25;
+				if (capture) {
+					sprintf(message, "You captured wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
+					showMessage(message);
+					num_pxm_owned = constrain(num_pxm_owned + 1, 0, MAX_OWNED);
+					// Add captured pixelmon to next empty slot
+					ownedPixelmon[num_pxm_owned-1] = *wild_pxm;
+				} else {
+					sprintf(message, "Wild %s escaped!", allPixelmon[wild_pxm->pixelmon_id].name);
+					showMessage(message);
+					drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_MAGENTA);
+					delay(500);
+					drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
+				}
+			}
+			// end player turn
+			player_pxm_turn = false;
+		} else { // Wild Pokemon turn
 			int attack_id = random(4); // Pick random move
 			// wild attacks
 			sprintf(message, "Wild %s attacks with %s",
@@ -563,8 +572,11 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			player_pxm->xp += (wild_pxm->level)*10;
 			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
 			showMessage(message);
-			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
-			updatePixelmon(player_pxm_x, player_pxm_y, *player_pxm, *last_player_pxm, isEnemy);
+			if (player_pxm->xp >= 100) {
+				levelUpPixelmon(player_pxm, message);
+				bool isEnemy = false;
+				updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, isEnemy);
+			}
 			eraseMenu();
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);

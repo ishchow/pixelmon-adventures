@@ -40,8 +40,11 @@ void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16
 void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 					uint16_t bg_color, char attacked_pxm);
 
-// print stats of pixelmon to tft in battle
-void displayPixelmonStats(pixelmon *player_pxm, pixelmon *wild_pxm);
+// Display player pixelmon stats to left side of screen
+void displayPlayerPixelmonStats(pixelmon *player_pxm) ;
+
+// Display wild pixelmon stats to right side of screen
+void displayEnemyPixelmonStats(pixelmon *wild_pxm);
 
 // display new health on screen
 void updateHealth(pixelmon *player_pxm, pixelmon *wild_pxm, char hit_pxm);

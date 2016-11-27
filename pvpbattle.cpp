@@ -82,16 +82,8 @@ pixelmon pixelmonServerFSM( pixelmon player_pxm ) {
       }
       else {
         enemy_pxm = pixelmon_from_serial3();
-        // enemy_pxm.pixelmon_id = int_from_serial3();
-        // enemy_pxm.health = int_from_serial3();
-        // enemy_pxm.level = int_from_serial3();
-        // enemy_pxm.xp = int_from_serial3();
         Serial3.write('A');
         pixelmon_to_serial3(player_pxm);
-        // int_to_serial3(player_pxm.pixelmon_id);
-        // int_to_serial3(player_pxm.health);
-        // int_to_serial3(player_pxm.level);
-        // int_to_serial3(player_pxm.xp);
         curr_state = WAITACK1;
       }
     }
@@ -117,10 +109,6 @@ pixelmon pixelmonServerFSM( pixelmon player_pxm ) {
       }
       else {
         enemy_pxm = pixelmon_from_serial3();
-        // enemy_pxm.pixelmon_id = int_from_serial3();
-        // enemy_pxm.health = int_from_serial3();
-        // enemy_pxm.level = int_from_serial3();
-        // enemy_pxm.xp = int_from_serial3();
         curr_state = WAITACK2;
       }
     }
@@ -158,10 +146,6 @@ pixelmon pixelmonClientFSM( pixelmon player_pxm ) {
     if (curr_state == START) {
       Serial3.write('C');
       pixelmon_to_serial3(player_pxm);
-      // int_to_serial3(player_pxm.pixelmon_id);
-      // int_to_serial3(player_pxm.health);
-      // int_to_serial3(player_pxm.level);
-      // int_to_serial3(player_pxm.xp);
       curr_state = WAITACK;
     }
     // WAITACK state
@@ -173,10 +157,6 @@ pixelmon pixelmonClientFSM( pixelmon player_pxm ) {
       // DATAEXC state
       else if ((char)Serial3.read() == 'A') {
         enemy_pxm = pixelmon_from_serial3();
-        // enemy_pxm.pixelmon_id = int_from_serial3();
-        // enemy_pxm.health = int_from_serial3();
-        // enemy_pxm.level = int_from_serial3();
-        // enemy_pxm.xp = int_from_serial3();
         Serial3.write('A');
         curr_state = DATAEXC;
         return enemy_pxm;
@@ -296,8 +276,8 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
   int player_pxm_x = 0, player_pxm_y = 0;
   int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
   drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
-  drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
-  displayPixelmonStats(player_pxm, wild_pxm);
+  // drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
+  displayPlayerPixelmonStats(player_pxm);
   int selected_option = 0;
   int last_selected_option = 0;
   // battle menu choices
@@ -335,6 +315,7 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
         *wild_pxm = pixelmonClientFSM(*player_pxm);
         player_pxm_turn = true;
     }
+    displayEnemyPixelmonStats(wild_pxm);
     updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
     //continue battle if one of 2 conditions are met
     while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0) {
@@ -426,7 +407,7 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
 			showMessage(message);
 			if (player_pxm->xp >= 100) {levelUpPixelmon(player_pxm, message);}
-      updatePixelmon(player_pxm_x, player_pxm_y, *player_pxm, *last_player_pxm, isEnemy);
+      updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, !isEnemy);
 			eraseMenu();
             if (digitalRead(13) == HIGH) {
                 last_wild_pxm = wild_pxm;
