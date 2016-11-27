@@ -26,6 +26,8 @@ Arduino Digital Pin 51 <--> Adafruit MOSI
 Arduino Digital Pin 52 <--> Adafruit SCK
 
 How to run code:
-Connect the Arduino to the computer, compile the code using the "make" function on the terminal, and then upload the code using "make upload". Use "serial-mon" to see additional information printed to the serial monitor.
+  In the directory where you extract the code run the following commands:
+  make
+  make upload
 
 Miscellaneous Information:

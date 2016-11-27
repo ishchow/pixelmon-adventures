@@ -197,10 +197,10 @@ int main() {
 	for (int i = 0; i < MAX_OWNED - 1; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
-		// this line is odd; causes monster health to go to 0
-		if ( i != MAX_OWNED - 2) {
-			ownedPixelmon[i].health = 0;
-		}
+		// this line is for testing; causes all pixelmon health except last to go to 0
+		// if ( i != MAX_OWNED - 2) {
+		// 	ownedPixelmon[i].health = 0;
+		// }
 		printPixelmon(&ownedPixelmon[i]);
 	}
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
@@ -241,6 +241,7 @@ int main() {
 					pixelmon enemy_pxm;
 					tft.fillScreen(ST7735_BLACK);
 					PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
+					updateMap();updateScreen();
 				}
 				else {updateMap();updateScreen();}
 			}
