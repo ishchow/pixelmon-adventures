@@ -390,6 +390,7 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
             *wild_pxm = pixelmonClientFSM(*player_pxm);
         }
         player_pxm_turn = true;
+        updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
         continue;
       }
       // if enemy attack
