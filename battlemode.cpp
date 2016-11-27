@@ -426,8 +426,7 @@ void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 			updateSwapMenu(*selected_pxm, *last_selected_pxm,
 						   *player_pxm, *last_player_pxm);
 			bool isEnemy = false;
-			updatePixelmon(player_pxm_x, player_pxm_y,
-						   *player_pxm, *last_player_pxm, isEnemy);
+			updatePixelmon(player_pxm_x, player_pxm_y, *player_pxm, *last_player_pxm, isEnemy);
 			*last_selected_pxm = *selected_pxm;
 			*last_player_pxm = *player_pxm;
 		}
@@ -463,6 +462,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int selected_pxm = 0;
 	int last_selected_pxm = 0;
 	pixelmon *last_player_pxm = player_pxm;
+	bool isEnemy = false;
 	// turns var.
 	bool player_pxm_turn = true;
 	char message[64] = {0};
@@ -564,7 +564,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
 			showMessage(message);
 			if (player_pxm->xp >= 100) levelUpPixelmon(player_pxm, message);
-			updatePixelmon(player_pxm_x, player_pxm_y, *player_pxm, *last_player_pxm, isEnemy);
+			updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, isEnemy);
 			eraseMenu();
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
