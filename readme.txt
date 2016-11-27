@@ -1,22 +1,13 @@
-parrot.bmp      - the usual parrot test bmp file
-
-parrot.lcd	- parrot as lcd
-yeg-sm.lcd      - small 128x128 tile of edmonton in lcd format
-
-yeg-sm.png      - as bitmap
-
-yeg-big.lcd     - big 2048x2048 tile of edmonton in lcd format
-
-yeg-big.png     - as bitmap
-
 sprite.lcd - 19x28
-
 chess.lcd - 480x480
 
-why use F with tft.print?
-
-spacing and indentation and bracket placement?
-
 TODO:
-pvpchallengemenu - yesorno - implement this with joystick in map mode
-pvpbattlemenu - fight/swap - make some changes to battlemenu in battlemode.cpp
+spacing and indentation and bracket placement
+add pixelmon
+balance game
+better pics
+
+IMPORTANT - make it so that you can exit if other player says no to PVP when you say yes to PVP
+-maybe use the integerFSMs
+-both players send and receive -1 to enter the PVP (use the timeout)
+-otherwise, go to map

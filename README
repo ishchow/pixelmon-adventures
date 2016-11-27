@@ -8,7 +8,7 @@ Kingston flash memory card - 4GB - microSDHC
 Joystick (SparkFun COM-09032)
 Arduino Mega 2560
 
-Wiring Instructions:
+Wiring Instructions (IMPORTANT - there are extra instructions for when there are two Arduinos):
 Arduino 5V <--> Bread Board Positive Bus <--> Adafruit VCC
 Arduino 5V <--> Bread Board Positive Bus <--> Joystick VCC
 Arduino 5V <--> Bread Board Positive Bus <--> Adafruit LITE
@@ -25,7 +25,23 @@ Arduino Digital Pin 50 <--> Adafruit MISO
 Arduino Digital Pin 51 <--> Adafruit MOSI
 Arduino Digital Pin 52 <--> Adafruit SCK
 
+IMPORTANT - this part is for two Arduinos (named Arduino 1 and Arduino 2)
+Arduino 1 Digital Pin 13 <--> Resistor(any) <--> Bread Board Positive Bus <--> 5V
+Arduino 2 Digital Pin 13 <--> Resistor(any) <--> Bread Board Negative Bus <--> GND
+Arduino 1 TX3 <--> Arduino 2 RX3
+Arduino 1 RX3 <--> Arduino 2 TX3
+
 How to run code:
+IMPORTANT - two .lcd files are required on your SD card to run this code
+sprite.lcd - 19x28
+chess.lcd - 480x480
 Connect the Arduino to the computer, compile the code using the "make" function on the terminal, and then upload the code using "make upload". Use "serial-mon" to see additional information printed to the serial monitor.
 
-Miscellaneous Information:
+Assumptions:
+It is assumed that the user will wait for the screen to finish drawing before moving the joystick (this is important because if the joystick is moved too early, the calibration will not be correct).
+It is also assumed that the user will put the LCD screen and Joystick in the correct orientation.
+It is assumed that one Arduino has pin 13 connected to ground and one Arduino has pin 13 connected to 5V for multiplayer mode.
+
+Additional Functionality:
+To enter the multiplayer (PVP) mode, press the joystick when you are in map mode.
+Then select either yes (enter PVP mode) or no (return to map mode).
