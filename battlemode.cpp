@@ -473,6 +473,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int selected_pxm = 0;
 	int last_selected_pxm = 0;
 	pixelmon *last_player_pxm = player_pxm;
+	bool isEnemy = false;
 	// turns var.
 	bool player_pxm_turn = true;
 	char message[64] = {0};

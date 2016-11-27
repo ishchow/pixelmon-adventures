@@ -184,25 +184,15 @@ void setup() {
 int main() {
 	setup();
 	loadAllPixelmon();
-
-	for (int i = 0; i < MAX_OWNED - 1; ++i) {
-		generatePixelmon(&ownedPixelmon[i]);
-		num_pxm_owned = i + 1;
-		// // this line is odd; causes monster health to go to 0
-		// if ( i != MAX_OWNED - 2) {
-		// 	ownedPixelmon[i].health = 0;
-		// }
-		printPixelmon(&ownedPixelmon[i]);
-	}
-	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
-
-	pixelmon enemy_pxm;
-	generatePixelmon(&enemy_pxm);
-	PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
-	tft.fillScreen(ST7735_BLACK);
-	while (true) {}
+	// pixelmon enemy_pxm;
+	// generatePixelmon(&enemy_pxm);
+	// PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
+	// tft.fillScreen(ST7735_BLACK);
 
 	updateMap();
+	int PVPChallenge = 1;
+	int PVP_choice = 0;
+	int prevPVP_choice = -1;
 
 	for (int i = 0; i < MAX_OWNED - 1; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
@@ -217,10 +207,9 @@ int main() {
 
 	int startTime = millis();
 	while (true) {
-		if (encounter_wild_pixelmon) {
+		if (encounter_wild_pixelmon) { // battle wild pixelmon in game mode
 			pixelmon wd; // Wild
 			generatePixelmon(&wd);
-
 			tft.fillScreen(ST7735_BLACK);
 			battleMode(&ownedPixelmon[0], &wd);
 			encounter_wild_pixelmon = false;
@@ -230,9 +219,31 @@ int main() {
 			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
 			delay(50); // Prevent debouncing?
 			if (allOwnedPixelmonDead()) healAllOwnedPixelmon();
-		} else {
+		} else { // map mode
 			uint8_t game_mode = 0;
-			scanJoystick(NULL, game_mode, NULL);
+			PVPChallenge = scanJoystick(NULL, game_mode, NULL);
+			if (PVPChallenge == 0) {
+				displayPVPChallengeMenu();
+				while (true) { //selection pvp choice while loop
+					int press = scanJoystick(&PVP_choice, 1, 2);
+					if (prevPVP_choice != PVP_choice) {
+						const char *PVPYESNO[] = {"YES", "NO"};
+						updatePVPChallengeMenu(PVP_choice, prevPVP_choice, PVPYESNO);
+						prevPVP_choice = PVP_choice;
+					}
+					if (press == LOW) {
+						press = HIGH;
+						prevPVP_choice = PVP_choice;
+						break;
+					}
+				}
+				if (PVP_choice == 0) {
+					pixelmon enemy_pxm;
+					tft.fillScreen(ST7735_BLACK);
+					PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
+				}
+				else {updateMap();updateScreen();}
+			}
 			if (update) updateScreen();
 		}
 

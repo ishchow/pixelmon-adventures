@@ -276,7 +276,6 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
   int player_pxm_x = 0, player_pxm_y = 0;
   int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
   drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
-  // drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
   displayPlayerPixelmonStats(player_pxm);
   int selected_option = 0;
   int last_selected_option = 0;
@@ -409,19 +408,20 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			if (player_pxm->xp >= 100) {levelUpPixelmon(player_pxm, message);}
       updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, !isEnemy);
 			eraseMenu();
-            if (digitalRead(13) == HIGH) {
-                last_wild_pxm = wild_pxm;
-                *wild_pxm = pixelmonServerFSM(*player_pxm);
-            } else {
-                last_wild_pxm = wild_pxm;
-                *wild_pxm = pixelmonClientFSM(*player_pxm);
-            }
-            updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
+      if (digitalRead(13) == HIGH) {
+          last_wild_pxm = wild_pxm;
+          *wild_pxm = pixelmonServerFSM(*player_pxm);
+      } else {
+          last_wild_pxm = wild_pxm;
+          *wild_pxm = pixelmonClientFSM(*player_pxm);
+      }
+      updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_BLACK);
 			eraseMenu();
+      // swapping out fainted pixelmon
 			while(!allOwnedPixelmonDead()) {
 				swapMode(&player_pxm, player_pxm_x, player_pxm_y,
 					 	 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
@@ -437,4 +437,34 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
       updatePixelmon(wild_pxm_x, wild_pxm_y, wild_pxm, last_wild_pxm, isEnemy);
 		}
 	}
+}
+
+// menu to ask if player wants PVP
+void displayPVPChallengeMenu() {
+  const int TXT_SIZE = 2;
+  tft.fillScreen(ST7735_BLACK);
+  tft.setTextSize(TXT_SIZE);
+	tft.setTextWrap(false);
+	tft.setCursor(18, 0);
+  tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+  tft.print(("PVP MODE"));
+  tft.setCursor(50, 70);
+  tft.print(("YES"));
+  tft.setCursor(50, 70 + TXT_SIZE*8);
+  tft.print(("NO"));
+}
+
+// highlight selection in challenge menu
+void updatePVPChallengeMenu(int PVP_choice, int prevPVP_choice, const char *PVPYESNO[]) {
+  const int TXT_SIZE = 2;
+	tft.setTextSize(TXT_SIZE);
+	tft.setTextWrap(false);
+	// deselect
+	tft.setCursor(50, 70 + prevPVP_choice*TXT_SIZE*8);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+  tft.print(PVPYESNO[prevPVP_choice]);
+	// select
+	tft.setCursor(50, 70 + PVP_choice*TXT_SIZE*8);
+	tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
+  tft.print(PVPYESNO[PVP_choice]);
 }
