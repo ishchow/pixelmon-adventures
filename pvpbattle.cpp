@@ -370,7 +370,7 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
         attack_id = integerServerFSM(-1);
       }
       else {
-        attack_id = integerClientFSM(selected_attack);
+        attack_id = integerClientFSM(-1);
       }
 			// enemy attacks
 			sprintf(message, "Enemy %s attacks with %s",
