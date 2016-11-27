@@ -177,8 +177,6 @@ void setup() {
 	calibrateJoyCentre();
 	update = true;
 	Serial.println("Setup Complete");
-	Serial.print("Size of pixelmon_type: "); Serial.println(sizeof(pixelmon_type));
-	Serial.print("Size of pixelmon: "); Serial.println(sizeof(pixelmon));
 }
 
 int main() {
