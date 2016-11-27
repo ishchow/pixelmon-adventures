@@ -19,10 +19,10 @@ typedef struct {
 
 // each individual pixelmon
 typedef struct {
-    int pixelmon_id;
-    int health;
-    int level;
-    int xp;
+    int pixelmon_id; // 0 <= pixelmon_id <= NUM_PIXELMON_TYPES - 1
+    int health; // 0 <= health <= 9999
+    int level; // 0 <= level <= 9999
+    int xp; // 0 <= xp <= 9999
 } pixelmon;
 
 const int NUM_PIXELMON_TYPES = 2; // total number of pixelmon
