@@ -308,6 +308,8 @@ void fightMode(pixelmon *player_pxm, int player_pxm_x, int player_pxm_y,
 		hitAnimation(enemy_pxm, enemy_pxm_x, enemy_pxm_y, ST7735_WHITE, ST7735_BLACK);
 		updateHealth(player_pxm, enemy_pxm, 'e');
 	} else {
+    // Display slightly different message depending on whether opponent is
+    // a computer or a human opponent
 		if (pvpMode) {
 			sprintf(message, "Enemy %s dodges!", allPixelmon[enemy_pxm->pixelmon_id].name);
 		} else {
@@ -394,26 +396,26 @@ void updatePixelmon(int player_pxm_x, int player_pxm_y,
 	if (isEnemy) cursor_x = TFT_WIDTH/2;
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	tft.setTextWrap(false);
-	//bmp of pixelmon
 	if (player_pxm->pixelmon_id != last_player_pxm->pixelmon_id) {
+    //draw bitmap of pixelmon
 		erasePixelmon(player_pxm_x, player_pxm_y, ST7735_BLACK);
 		drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
-		//name
+		// display pixelmon name
 		tft.setCursor(cursor_x, 33);
 		tft.fillRect(cursor_x, 33, TFT_WIDTH/2, 7, ST7735_BLACK); // Clear previous name
 		tft.print(allPixelmon[player_pxm->pixelmon_id].name);
 	}
 	//health
-	tft.setCursor(cursor_x + 7*5, 33+8); // After "Life: "
 	tft.fillRect(cursor_x + 7*5, 33+8, TFT_WIDTH/2 - 7*5, 7, ST7735_BLACK); // Clear previous life
+  tft.setCursor(cursor_x + 7*5, 33+8); // After "Life: "
 	tft.print(player_pxm->health);
 	//level
-	tft.setCursor(cursor_x + 6*5, 33+16); // After "Lvl: "
 	tft.fillRect(cursor_x + 6*5, 33+16, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK); // Clear previous level
+  tft.setCursor(cursor_x + 6*5, 33+16); // After "Lvl: "
 	tft.print(player_pxm->level);
 	//xp
-	tft.setCursor(cursor_x + 6*5, 33+24); // After "EXP: "
 	tft.fillRect(cursor_x + 6*5, 33+24, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK); // Clear previous xp
+  tft.setCursor(cursor_x + 6*5, 33+24); // After "EXP: "
 	tft.print(player_pxm->xp);
 }
 
@@ -434,12 +436,15 @@ void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 {
 	uint8_t game_mode = 1;
 	displaySwapMenu(*selected_pxm);
+	if ((*player_pxm)->health == 0) { // Redraw dead pixelmon
+		drawPixelmon(*player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
+	}
 	while (true) {
 		int press = scanJoystick(selected_pxm, game_mode, num_pxm_owned);
 		if (*last_selected_pxm != *selected_pxm) {
 			*player_pxm = &ownedPixelmon[*selected_pxm];
 			updateSwapMenu(*selected_pxm, *last_selected_pxm,
-			*player_pxm, *last_player_pxm);
+			               *player_pxm, *last_player_pxm);
 			bool isEnemy = false;
 			updatePixelmon(player_pxm_x, player_pxm_y, *player_pxm, *last_player_pxm, isEnemy);
 			*last_selected_pxm = *selected_pxm;
@@ -580,10 +585,13 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			player_pxm->xp += (wild_pxm->level)*10;
 			sprintf(message, "%s gained %d xp", allPixelmon[player_pxm->pixelmon_id].name, 10*wild_pxm->level);
 			showMessage(message);
+      // Show xp gain wheter or not pixelmon levels up
+      updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, isEnemy);
 			if (player_pxm->xp >= 100) {
 				levelUpPixelmon(player_pxm, message);
 				bool isEnemy = false;
-				updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, isEnemy);
+        // Show stats (most importantly level) after level up
+        updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, isEnemy);
 			}
 			eraseMenu();
 		} else if (player_pxm->health <= 0) {
@@ -591,6 +599,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			showMessage(message);
 			deathAnimation(player_pxm, player_pxm_x, player_pxm_y, ST7735_BLACK);
 			eraseMenu();
+			// last_player_pxm->pixelmon_id = -1; // Garbage values for update pixelmon
 			while(!allOwnedPixelmonDead()) {
 				swapMode(&player_pxm, player_pxm_x, player_pxm_y,
 					 	 		 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);

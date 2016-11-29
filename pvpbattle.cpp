@@ -312,11 +312,11 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
     if (digitalRead(13) == HIGH) {
         last_enemy_pxm = enemy_pxm;
         *enemy_pxm = pixelmonServerFSM(*player_pxm);
-        player_pxm_turn = false;
+        player_pxm_turn = false; // Server goes after client
     } else {
         last_enemy_pxm = enemy_pxm;
         *enemy_pxm = pixelmonClientFSM(*player_pxm);
-        player_pxm_turn = true;
+        player_pxm_turn = true; // Client goes first
     }
     displayEnemyPixelmonStats(enemy_pxm);
     updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);

@@ -110,6 +110,7 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 
 	if (game_mode == 0) { // map mode = 0
 		if (abs(v - g_joyCentreY) > JOY_DEADZONE) { //vertical movement
+			Serial.print("vert: "); Serial.println(v);
 			//outside of deadzone
 			update = true;
 			if (random(0,100)>90) {encounter_wild_pixelmon = 1;}
@@ -126,6 +127,7 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 			}
 		}
 		if (abs(h - g_joyCentreX) > JOY_DEADZONE) { //horizontal movement
+			Serial.print("horiz: "); Serial.println(h);
 			update = true;
 			if (random(0,100)>90) {encounter_wild_pixelmon = 1;}
 			//outside of deadzone
@@ -203,20 +205,20 @@ int main() {
 	}
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 
-	int startTime = millis();
+	long startTime = millis();
 	while (true) {
 		if (encounter_wild_pixelmon) { // battle wild pixelmon in game mode
-			pixelmon wd; // Wild
+			pixelmon wd; // Wild pixelmon
 			generatePixelmon(&wd);
 			tft.fillScreen(ST7735_BLACK);
-			battleMode(&ownedPixelmon[0], &wd);
+			battleMode(&ownedPixelmon[0], &wd); // Initiate battle b/w player and wild
 			encounter_wild_pixelmon = false;
 			updateMap();
 			updateScreen();
 			Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
-			delay(50); // Prevent debouncing?
 			if (allOwnedPixelmonDead()) healAllOwnedPixelmon();
+			startTime = millis();
 		} else { // map mode
 			uint8_t game_mode = 0;
 			PVPChallenge = scanJoystick(NULL, game_mode, NULL);
@@ -235,13 +237,14 @@ int main() {
 						break;
 					}
 				}
-				if (PVP_choice == 0) {
+				if (PVP_choice == 0) { // Player enters PVP Mode
 					// Set garbage values in order to correctly update the enemy_pxm
 					// when calling updatePixelmon() in PVPbattleMode()
 					pixelmon enemy_pxm = {-1, -1, -1, -1};
 					tft.fillScreen(ST7735_BLACK);
 					PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
 					updateMap();updateScreen();
+					startTime = millis();
 				}
 				else {updateMap();updateScreen();}
 			}
@@ -249,7 +252,8 @@ int main() {
 		}
 
 		//keep constant framerate
-		int timeDiff = millis() - startTime; //time elapsed from start of loop until after refresh
+		long timeDiff = millis() - startTime; //time elapsed since start of loop or
+																					// last battle (pvp or wild) until after refresh
 		if (timeDiff < MILLIS_PER_FRAME){
 			delay(MILLIS_PER_FRAME - timeDiff);
 		}
