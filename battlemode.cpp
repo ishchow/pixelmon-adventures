@@ -225,7 +225,7 @@ void updateFightMenu(pixelmon *player_pxm, int selected_attack, int last_selecte
 
 // make part (where messages appear) of screen black
 void eraseDisplayArea() {
-	tft.fillRect(0, 33 + 6*7 + 1, TFT_WIDTH, 8*2, ST7735_BLACK);
+	tft.fillRect(0, 33 + 6*7 + 1, TFT_WIDTH, 8*3, ST7735_BLACK);
 	// arguments: top x, top y, width, height, color for box
 }
 

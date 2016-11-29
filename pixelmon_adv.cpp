@@ -102,7 +102,7 @@ void updateScreen() {
 }
 
 // scan joystick and update cursor position
-int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
+int scanJoystick(int *selection, uint8_t game_mode, uint8_t num_options){
 	int v = analogRead(JOY_VERT_ANALOG);
 	int h = analogRead(JOY_HORIZ_ANALOG);
 	int select = digitalRead(JOY_SEL); // HIGH when not pressed, LOW when pressed
@@ -110,7 +110,6 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 
 	if (game_mode == 0) { // map mode = 0
 		if (abs(v - g_joyCentreY) > JOY_DEADZONE) { //vertical movement
-			Serial.print("vert: "); Serial.println(v);
 			//outside of deadzone
 			update = true;
 			if (random(0,100)>90) {encounter_wild_pixelmon = 1;}
@@ -127,7 +126,6 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 			}
 		}
 		if (abs(h - g_joyCentreX) > JOY_DEADZONE) { //horizontal movement
-			Serial.print("horiz: "); Serial.println(h);
 			update = true;
 			if (random(0,100)>90) {encounter_wild_pixelmon = 1;}
 			//outside of deadzone
@@ -149,10 +147,10 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 			int delta = v - g_joyCentreY;
 			if (delta > 0) {
 				delay(100);
-				*selection = constrain(*selection+1, 0, max_selection-1); //down
+				*selection = constrain(*selection+1, 0, num_options-1); //down
 			} else {
 				delay(100);
-				*selection = constrain(*selection-1, 0, max_selection-1); //up
+				*selection = constrain(*selection-1, 0, num_options-1); //up
 			}
 		}
 	}
@@ -179,6 +177,8 @@ void setup() {
 	calibrateJoyCentre();
 	update = true;
 	Serial.println("Setup Complete");
+	Serial.print("Size of pixelmon_type: "); Serial.println(sizeof(pixelmon_type));
+	Serial.print("Size of allPixelmon: "); Serial.println(sizeof(pixelmon_type)*NUM_PIXELMON_TYPES);
 }
 
 int main() {
