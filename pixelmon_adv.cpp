@@ -193,6 +193,7 @@ int main() {
 	int PVPChallenge = 1;
 	int PVP_choice = 0;
 	int prevPVP_choice = -1;
+	int battleConfirm = 0;
 
 	for (int i = 0; i < MAX_OWNED - 1; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
@@ -238,15 +239,31 @@ int main() {
 					}
 				}
 				if (PVP_choice == 0) { // Player enters PVP Mode
-					// Set garbage values in order to correctly update the enemy_pxm
-					// when calling updatePixelmon() in PVPbattleMode()
-					pixelmon enemy_pxm = {-1, -1, -1, -1};
-					tft.fillScreen(ST7735_BLACK);
-					PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
-					updateMap();updateScreen();
-					startTime = millis();
+					if (digitalRead(13) == HIGH) {
+						battleConfirm = integerServerFSM(-1000);
+					}
+					else {
+						battleConfirm = integerClientFSM(-1000);
+					}
+					if (battleConfirm == -1000) {
+						pixelmon enemy_pxm;
+						generatePixelmon(&enemy_pxm);
+						tft.fillScreen(ST7735_BLACK);
+						PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
+						updateMap();updateScreen();
+						startTime = millis();
+					}
 				}
-				else {updateMap();updateScreen();}
+				else {
+					if (digitalRead(13) == HIGH) {
+						integerServerFSM(-2000);
+					}
+					else {
+						integerClientFSM(-2000);
+					}
+					updateMap();
+					updateScreen();
+				}
 			}
 			if (update) updateScreen();
 		}
