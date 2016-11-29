@@ -42,6 +42,13 @@ It is assumed that the user will wait for the screen to finish drawing before mo
 It is also assumed that the user will put the LCD screen and Joystick in the correct orientation.
 It is assumed that one Arduino has pin 13 connected to ground and one Arduino has pin 13 connected to 5V for multiplayer mode.
 
+
+
 Additional Functionality:
+
+Multiplayer/PVP Mode
 To enter the multiplayer (PVP) mode, press the joystick when you are in map mode.
 Then select either yes (enter PVP mode) or no (return to map mode).
+
+User-Added Content
+The user may add his or her own pixelmon if they have the correct file format (convert images to bmp for Arduino at http://javl.github.io/image2cpp/) and by creating his or her own values for name, attacks, and damage in the pixelmondata.cpp file (be sure to change the variable NUM_PIXELMON_TYPES in the pixelmondata.h header file as well).

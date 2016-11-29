@@ -6,13 +6,13 @@
 
 // attack names and damage
 typedef struct {
-    char* name;
+    char* name; // names longer than 10 do not display entire string in fight menu
     uint16_t dmg;
 } fight_move;
 
 // types of pixelmon
 typedef struct {
-    char *name;
+    char *name; //names should be 1-10 char long
     const uint8_t *bitmap;
     fight_move attacks[4];
 } pixelmon_type;

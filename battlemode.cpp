@@ -535,7 +535,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				sprintf(message, "You can only have %d pixelmon!", MAX_OWNED);
 				showMessage(message);
 			} else if (selected_option == 3 && num_pxm_owned < MAX_OWNED) { // Capture
-				sprintf(message, "You throw a pokeball at wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
+				sprintf(message, "You throw a pixelcube at wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
 				showMessage(message);
 				erasePixelmon(wild_pxm_x, wild_pxm_y, ST7735_BLACK);
 				delay(500);
