@@ -50,7 +50,7 @@ int integerClientFSM( int integerSent );
 void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm);
 
 // menu to ask if player wants PVP
-void displayPVPChallengeMenu();
+void displayPVPChallengeMenu(int PVP_choice, const char *PVPYESNO[]);
 
 // highlight selection in challenge menu
 void updatePVPChallengeMenu(int PVP_choice, int prevPVP_choice, const char *PVPYESNO[]);

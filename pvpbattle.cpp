@@ -469,7 +469,8 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
 }
 
 // menu to ask if player wants PVP
-void displayPVPChallengeMenu() {
+
+void displayPVPChallengeMenu(int PVP_choice, const char *PVPYESNO[]) {
   const int TXT_SIZE = 2;
   tft.fillScreen(ST7735_BLACK);
   tft.setTextSize(TXT_SIZE);
@@ -478,9 +479,12 @@ void displayPVPChallengeMenu() {
   tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
   tft.print(("PVP MODE"));
   tft.setCursor(50, 70);
-  tft.print(("YES"));
-  tft.setCursor(50, 70 + TXT_SIZE*8);
-  tft.print(("NO"));
+  for (int i=0;i<2;++i) {
+    if (PVP_choice == i) {tft.setTextColor(ST7735_BLACK, ST7735_WHITE);}
+    else {tft.setTextColor(ST7735_WHITE, ST7735_BLACK);}
+    tft.print(PVPYESNO[i]);
+    tft.setCursor(50, 70 + TXT_SIZE*8);
+  }
 }
 
 // highlight selection in challenge menu

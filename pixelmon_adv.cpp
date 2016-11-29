@@ -194,6 +194,7 @@ int main() {
 	int PVP_choice = 0;
 	int prevPVP_choice = -1;
 	int battleConfirm = 0;
+	const char *PVPYESNO[] = {"YES", "NO"};
 
 	for (int i = 0; i < MAX_OWNED - 1; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
@@ -224,11 +225,10 @@ int main() {
 			uint8_t game_mode = 0;
 			PVPChallenge = scanJoystick(NULL, game_mode, NULL);
 			if (PVPChallenge == 0) {
-				displayPVPChallengeMenu();
+				displayPVPChallengeMenu(PVP_choice, PVPYESNO);
 				while (true) { //selection pvp choice while loop
 					int press = scanJoystick(&PVP_choice, 1, 2);
 					if (prevPVP_choice != PVP_choice) {
-						const char *PVPYESNO[] = {"YES", "NO"};
 						updatePVPChallengeMenu(PVP_choice, prevPVP_choice, PVPYESNO);
 						prevPVP_choice = PVP_choice;
 					}
