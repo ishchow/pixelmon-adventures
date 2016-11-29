@@ -192,7 +192,7 @@ int main() {
 	updateMap();
 	int PVPChallenge = 1;
 	int PVP_choice = 0;
-	int prevPVP_choice = -1;
+	int prevPVP_choice = 0;
 	int battleConfirm = 0;
 	const char *PVPYESNO[] = {"YES", "NO"};
 
