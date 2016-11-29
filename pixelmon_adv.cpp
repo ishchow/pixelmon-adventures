@@ -250,7 +250,13 @@ int main() {
 						generatePixelmon(&enemy_pxm);
 						tft.fillScreen(ST7735_BLACK);
 						PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
-						updateMap();updateScreen();
+						updateMap();
+						updateScreen();
+						startTime = millis();
+					}
+					else {
+						updateMap();
+						updateScreen();
 						startTime = millis();
 					}
 				}
@@ -263,6 +269,7 @@ int main() {
 					}
 					updateMap();
 					updateScreen();
+					startTime = millis();
 				}
 			}
 			if (update) updateScreen();
