@@ -169,7 +169,7 @@ void loadAllPixelmon() {
   allPixelmon[7].attacks[2].name = "I'm B*tman"; allPixelmon[7].attacks[2].dmg = 100;
   allPixelmon[7].attacks[3].name = "cape"; allPixelmon[7].attacks[3].dmg = 16;
 
-  allPixelmon[8].name = " invader";
+  allPixelmon[8].name = "invader";
   allPixelmon[8].bitmap = voidinvader;
   allPixelmon[8].attacks[0].name = "laser"; allPixelmon[8].attacks[0].dmg = 18;
   allPixelmon[8].attacks[1].name = "left"; allPixelmon[8].attacks[1].dmg = 8;
