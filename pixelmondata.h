@@ -7,7 +7,8 @@
 // attack names and damage
 typedef struct {
     char* name; // names longer than 10 do not display entire string in fight menu
-    uint16_t dmg;
+    uint16_t dmg; // Damage: dmg >= 1
+    uint8_t acc; // Accuracy: 1 <= acc <= 100
 } fight_move;
 
 // types of pixelmon

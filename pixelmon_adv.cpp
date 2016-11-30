@@ -246,8 +246,8 @@ int main() {
 						battleConfirm = integerClientFSM(-1000);
 					}
 					if (battleConfirm == -1000) {
-						pixelmon enemy_pxm;
-						generatePixelmon(&enemy_pxm);
+						pixelmon enemy_pxm = {-1, 0, 0, 0};
+						// generatePixelmon(&enemy_pxm);
 						tft.fillScreen(ST7735_BLACK);
 						PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
 						updateMap();
