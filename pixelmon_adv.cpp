@@ -8,6 +8,7 @@
 #include <avr/pgmspace.h> // For PROGMEM
 #include "pixelmondata.h" //loads pixelmon data types and data
 #include "battlemode.h" //pixelmon stats, battlemode, menus
+#include "pvpbattle.h" // for pvp pixelmon battles
 
 // Display pins:
 // standard U of A library settings, assuming Atmel Mega SPI pins
@@ -101,7 +102,7 @@ void updateScreen() {
 }
 
 // scan joystick and update cursor position
-int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
+int scanJoystick(int *selection, uint8_t game_mode, uint8_t num_options){
 	int v = analogRead(JOY_VERT_ANALOG);
 	int h = analogRead(JOY_HORIZ_ANALOG);
 	int select = digitalRead(JOY_SEL); // HIGH when not pressed, LOW when pressed
@@ -145,9 +146,11 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 		if (abs(v - g_joyCentreY) > JOY_DEADZONE) {
 			int delta = v - g_joyCentreY;
 			if (delta > 0) {
-				*selection = constrain(*selection+1, 0, max_selection-1); //down
+				delay(100);
+				*selection = constrain(*selection+1, 0, num_options-1); //down
 			} else {
-				*selection = constrain(*selection-1, 0, max_selection-1); //up
+				delay(100);
+				*selection = constrain(*selection-1, 0, num_options-1); //up
 			}
 		}
 	}
@@ -158,6 +161,7 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t max_selection){
 void setup() {
 	init();
 	Serial.begin(9600);
+	Serial3.begin(9600);
 	randomSeed(analogRead(7)); // for better random numbers
 	tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black or blue tab
 	// init SD card
@@ -174,54 +178,113 @@ void setup() {
 	update = true;
 	Serial.println("Setup Complete");
 	Serial.print("Size of pixelmon_type: "); Serial.println(sizeof(pixelmon_type));
-	Serial.print("Size of pixelmon: "); Serial.println(sizeof(pixelmon));
+	Serial.print("Size of allPixelmon: "); Serial.println(sizeof(pixelmon_type)*NUM_PIXELMON_TYPES);
 }
 
 int main() {
 	setup();
 	loadAllPixelmon();
+	// pixelmon enemy_pxm;
+	// generatePixelmon(&enemy_pxm);
+	// PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
+	// tft.fillScreen(ST7735_BLACK);
 
 	updateMap();
+	int PVPChallenge = 1;
+	int PVP_choice = 0;
+	int prevPVP_choice = 0;
+	int battleConfirm = 0;
+	const char *PVPYESNO[] = {"YES", "NO"};
 
 	for (int i = 0; i < MAX_OWNED - 1; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
-		printPixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
-		if ( i != MAX_OWNED - 2) {
-			ownedPixelmon[i].health = 0;
-		}
+		// this line is for testing; causes all pixelmon health except last to go to 0
+		// if ( i != MAX_OWNED - 2) {
+		// 	ownedPixelmon[i].health = 0;
+		// }
+		printPixelmon(&ownedPixelmon[i]);
 	}
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 
-	int startTime = millis();
+	long startTime = millis();
 	while (true) {
-		if (encounter_wild_pixelmon) {
-			pixelmon wd; // Wild
+		if (encounter_wild_pixelmon) { // battle wild pixelmon in game mode
+			pixelmon wd; // Wild pixelmon
 			generatePixelmon(&wd);
-
 			tft.fillScreen(ST7735_BLACK);
-			battleMode(&ownedPixelmon[0], &wd);
+			battleMode(&ownedPixelmon[0], &wd); // Initiate battle b/w player and wild
 			encounter_wild_pixelmon = false;
 			updateMap();
 			updateScreen();
 			Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
-			delay(50); // Prevent debouncing?
-				if (allOwnedPixelmonDead()) healAllOwnedPixelmon();
-		} else {
+			if (allOwnedPixelmonDead()) healAllOwnedPixelmon();
+			startTime = millis();
+		} else { // map mode
 			uint8_t game_mode = 0;
-			scanJoystick(NULL, game_mode, NULL);
+			PVPChallenge = scanJoystick(NULL, game_mode, NULL);
+			if (PVPChallenge == 0) {
+				displayPVPChallengeMenu(PVP_choice, PVPYESNO);
+				while (true) { //selection pvp choice while loop
+					int press = scanJoystick(&PVP_choice, 1, 2);
+					if (prevPVP_choice != PVP_choice) {
+						updatePVPChallengeMenu(PVP_choice, prevPVP_choice, PVPYESNO);
+						prevPVP_choice = PVP_choice;
+					}
+					if (press == LOW) {
+						press = HIGH;
+						prevPVP_choice = PVP_choice;
+						break;
+					}
+				}
+				if (PVP_choice == 0) { // Player enters PVP Mode
+					if (digitalRead(13) == HIGH) {
+						battleConfirm = integerServerFSM(-1000);
+					}
+					else {
+						battleConfirm = integerClientFSM(-1000);
+					}
+					if (battleConfirm == -1000) {
+						pixelmon enemy_pxm = {-1, 0, 0, 0};
+						// generatePixelmon(&enemy_pxm);
+						tft.fillScreen(ST7735_BLACK);
+						PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
+						updateMap();
+						updateScreen();
+						startTime = millis();
+					}
+					else {
+						updateMap();
+						updateScreen();
+						startTime = millis();
+					}
+				}
+				else {
+					if (digitalRead(13) == HIGH) {
+						integerServerFSM(-2000);
+					}
+					else {
+						integerClientFSM(-2000);
+					}
+					updateMap();
+					updateScreen();
+					startTime = millis();
+				}
+			}
 			if (update) updateScreen();
 		}
 
 		//keep constant framerate
-		int timeDiff = millis() - startTime; //time elapsed from start of loop until after refresh
+		long timeDiff = millis() - startTime; //time elapsed since start of loop or
+																					// last battle (pvp or wild) until after refresh
 		if (timeDiff < MILLIS_PER_FRAME){
 			delay(MILLIS_PER_FRAME - timeDiff);
 		}
 		startTime = millis();
 	}
 
+	Serial3.end();
 	Serial.end();
 	return 0;
 }

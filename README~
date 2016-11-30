@@ -42,8 +42,6 @@ It is assumed that the user will wait for the screen to finish drawing before mo
 It is also assumed that the user will put the LCD screen and Joystick in the correct orientation.
 It is assumed that one Arduino has pin 13 connected to ground and one Arduino has pin 13 connected to 5V for multiplayer mode.
 
-
-
 Additional Functionality:
 
 Multiplayer/PVP Mode
