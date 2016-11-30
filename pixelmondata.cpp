@@ -134,12 +134,12 @@ void loadAllPixelmon() {
   allPixelmon[2].attacks[2].name = "jelly"; allPixelmon[2].attacks[2].dmg = 15;
   allPixelmon[2].attacks[3].name = "time"; allPixelmon[2].attacks[3].dmg = 19;
 
-  allPixelmon[3].name = "the donald";
+  allPixelmon[3].name = "Donald";
   allPixelmon[3].bitmap = the_donald;
   allPixelmon[3].attacks[0].name = "grope"; allPixelmon[3].attacks[0].dmg = 2;
   allPixelmon[3].attacks[1].name = "deport"; allPixelmon[3].attacks[1].dmg = 4;
   allPixelmon[3].attacks[2].name = "build a wall"; allPixelmon[3].attacks[2].dmg = 20;
-  allPixelmon[3].attacks[3].name = "make america great again"; allPixelmon[3].attacks[3].dmg = 25;
+  allPixelmon[3].attacks[3].name = "make 'murica great again"; allPixelmon[3].attacks[3].dmg = 0;
 
   allPixelmon[4].name = "pixelcat";
   allPixelmon[4].bitmap = pixelcat;
@@ -164,15 +164,15 @@ void loadAllPixelmon() {
 
   allPixelmon[7].name = "braveman";
   allPixelmon[7].bitmap = braveman;
-  allPixelmon[7].attacks[0].name = "b*tarang"; allPixelmon[7].attacks[0].dmg = 18;
+  allPixelmon[7].attacks[0].name = "B*Tarang"; allPixelmon[7].attacks[0].dmg = 18;
   allPixelmon[7].attacks[1].name = "punch"; allPixelmon[7].attacks[1].dmg = 13;
-  allPixelmon[7].attacks[2].name = "call batman"; allPixelmon[7].attacks[2].dmg = 100;
+  allPixelmon[7].attacks[2].name = "I'm B*tman"; allPixelmon[7].attacks[2].dmg = 100;
   allPixelmon[7].attacks[3].name = "cape"; allPixelmon[7].attacks[3].dmg = 16;
 
-  allPixelmon[8].name = "invader";
+  allPixelmon[8].name = " invader";
   allPixelmon[8].bitmap = voidinvader;
   allPixelmon[8].attacks[0].name = "laser"; allPixelmon[8].attacks[0].dmg = 18;
-  allPixelmon[8].attacks[1].name = "shift left"; allPixelmon[8].attacks[1].dmg = 8;
-  allPixelmon[8].attacks[2].name = "shift right"; allPixelmon[8].attacks[2].dmg = 8;
+  allPixelmon[8].attacks[1].name = "left"; allPixelmon[8].attacks[1].dmg = 8;
+  allPixelmon[8].attacks[2].name = "right"; allPixelmon[8].attacks[2].dmg = 8;
   allPixelmon[8].attacks[3].name = "move down"; allPixelmon[8].attacks[3].dmg = 13;
 }
