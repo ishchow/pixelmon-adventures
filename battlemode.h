@@ -40,6 +40,9 @@ void deathAnimation(pixelmon *killed, int16_t killed_x, int16_t killed_y, uint16
 void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 										uint16_t bg_color, char attacked_pxm);
 
+void escapeAnimation(pixelmon *wild_pxm, int wild_pxm_x, int wild_pxm_y,
+										 uint16_t bmp_color, uint16_t escape_color);
+
 // Display player pixelmon stats to left side of screen
 void displayPlayerPixelmonStats(pixelmon *player_pxm) ;
 
@@ -101,6 +104,9 @@ void levelUpPixelmon(pixelmon *player_pxm, char *message);
 void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 				  	  pixelmon **last_player_pxm, int* selected_pxm, int* last_selected_pxm,
 					  	char *message);
+
+// Picks the attack for the wild pixelmon based on a chosen strategy
+int aiPickAttack(pixelmon *wild_pxm, int ai_scheme);
 
 // fxn with menu for fight, flee, swap, capture
 void battleMode(pixelmon *player_pxm, pixelmon *enemy_pxm);

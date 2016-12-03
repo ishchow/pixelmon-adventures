@@ -149,6 +149,15 @@ void dodgeAnimation(pixelmon *px, int16_t x, int16_t y, uint16_t bmp_color,
 		}
 	}
 
+// Animation to display if capture fails
+void escapeAnimation(pixelmon *wild_pxm, int wild_pxm_x, int wild_pxm_y,
+										 uint16_t bmp_color, uint16_t escape_color)
+{
+	drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, escape_color);
+	delay(500);
+	drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, bmp_color);
+}
+
 // Display player pixelmon stats to left side of screen
 void displayPlayerPixelmonStats(pixelmon *player_pxm) {
 	tft.setTextSize(1);
@@ -469,6 +478,54 @@ void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 	showMessage(message);
 }
 
+// Picks the attack for the wild pixelmon based on a chosen strategy
+int aiPickAttack(pixelmon *wild_pxm, int ai_scheme) {
+	int chosen_attack_id = 0;
+	int max_stat; // Stat that is to be maximized
+	int wild_pxm_id = wild_pxm->pixelmon_id;
+	switch (ai_scheme) {
+		case 0: // dumb
+			chosen_attack_id = random(4);
+			break;
+		case 1: // aggressive
+			// aggressive ai will try to pick the attack with the most damage
+			// If two attacks have the same damage, it will pick the first attack in the
+			// list of attacks
+			max_stat = allPixelmon[wild_pxm_id].attacks[0].dmg;
+			break;
+		case 2: // conservative
+			//  conservative ai will try to pick the attack with the most accuracy
+			// If two attacks have the same accuracy, it will pick the first attack in the
+			// list of attacks
+			max_stat = allPixelmon[wild_pxm_id].attacks[0].acc;
+			break;
+		case 3: // smart
+			// smart ai will try to pick the attack with the highest effective damage,
+			// where the effective damage is product of damage and accuracy.
+			// Theoretically, the effective damage is the cumulative damage that will
+			// be dealt after executing an attack 100 times
+			max_stat = allPixelmon[wild_pxm_id].attacks[0].dmg * allPixelmon[wild_pxm_id].attacks[0].acc;
+			break;
+	}
+
+	int curr_stat;
+	for (int i = 1; i < 4; ++i) {
+		if (ai_scheme == 1) curr_stat = allPixelmon[wild_pxm_id].attacks[i].dmg;
+		else if (ai_scheme == 2) curr_stat = allPixelmon[wild_pxm_id].attacks[i].acc;
+		else if (ai_scheme == 3) {
+			curr_stat = allPixelmon[wild_pxm_id].attacks[i].dmg * allPixelmon[wild_pxm_id].attacks[i].acc;
+		} else {
+			break;
+		}
+		if (curr_stat > max_stat) {
+			max_stat = curr_stat;
+			chosen_attack_id = i;
+		}
+	}
+
+	return chosen_attack_id;
+}
+
 // complete fxn that uses fightmode and other fxns to conduct entire battle
 void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	uint8_t game_mode = 1;
@@ -496,6 +553,8 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	char message[64] = {0};
 	bool flee = false;
   bool capture = false;
+	int wild_pxm_strategy = random(4);
+	Serial.print("Wild strategy: "); Serial.println(wild_pxm_strategy);
 	int wild_pxm_max_health = wild_pxm->health; // Store original health
   sprintf(message, "You encounter a wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
 	showMessage(message);
@@ -560,16 +619,14 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 					ownedPixelmon[num_pxm_owned-1] = *wild_pxm;
 				} else {
 					sprintf(message, "Wild %s escaped!", allPixelmon[wild_pxm->pixelmon_id].name);
+					escapeAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE, ST7735_MAGENTA);
 					showMessage(message);
-					drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_MAGENTA);
-					delay(500);
-					drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
 				}
 			}
 			// end player turn
 			player_pxm_turn = false;
 		} else { // Wild Pokemon turn
-			int attack_id = random(4); // Pick random move
+			int attack_id = aiPickAttack(wild_pxm, wild_pxm_strategy);
 			// wild attacks
 			sprintf(message, "Wild %s attacks with %s",
 							allPixelmon[wild_pxm->pixelmon_id].name,
