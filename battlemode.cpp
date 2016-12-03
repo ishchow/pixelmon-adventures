@@ -411,15 +411,13 @@ void updatePixelmon(int pxm_x, int pxm_y, pixelmon *pxm, pixelmon *last_pxm, boo
 	if (isEnemy) cursor_x = TFT_WIDTH/2;
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	tft.setTextWrap(false);
-	if (pxm->pixelmon_id != last_pxm->pixelmon_id) {
-    //draw bitmap of pixelmon
-		erasePixelmon(pxm_x, pxm_y, ST7735_BLACK);
-		drawPixelmon(pxm, pxm_x, pxm_y, ST7735_WHITE);
-		// display pixelmon name
-		tft.setCursor(cursor_x, 33);
-		tft.fillRect(cursor_x, 33, TFT_WIDTH/2, 8, ST7735_BLACK); // Clear previous name
-		tft.print(allPixelmon[pxm->pixelmon_id].name);
-	}
+  //draw bitmap of pixelmon
+	erasePixelmon(pxm_x, pxm_y, ST7735_BLACK);
+	drawPixelmon(pxm, pxm_x, pxm_y, ST7735_WHITE);
+	// display pixelmon name
+	tft.setCursor(cursor_x, 33);
+	tft.fillRect(cursor_x, 33, TFT_WIDTH/2, 8, ST7735_BLACK); // Clear previous name
+	tft.print(allPixelmon[pxm->pixelmon_id].name);
 	//health
 	tft.fillRect(cursor_x + 7*5, 33+8, TFT_WIDTH/2 - 7*5, 8, ST7735_BLACK); // Clear previous life
   tft.setCursor(cursor_x + 7*5, 33+8); // After "Life: "
