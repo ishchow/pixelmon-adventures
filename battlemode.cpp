@@ -80,8 +80,9 @@ void erasePixelmon(int16_t x, int16_t y, uint16_t bg_color) {
 bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
 	int prev_health = victim->health;
 	int hit_probability = random(0, 101);
-	if (hit_probability >= 25) {
-		victim->health -= allPixelmon[attacker->pixelmon_id].attacks[attack_id].dmg;
+	int hit_threshold = 100-allPixelmon[attacker->pixelmon_id].attacks[attack_id].acc;
+	if (hit_probability >=  hit_threshold) {
+		victim->health -= allPixelmon[attacker->pixelmon_id].attacks[attack_id].dmg + attacker->level;
 		victim->health = constrain(victim->health, 0, prev_health);
 		return true;
 	}
@@ -255,11 +256,11 @@ void displayMoveStats(pixelmon *player_pxm, int selected_attack) {
 	// damage
 	tft.setCursor(0, 33 + 6*7 + 1);
 	tft.print(F("Dmg: "));
-	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].dmg);
+	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].dmg + player_pxm->level);
 	// accuracy
 	tft.setCursor(TFT_WIDTH/2, 33 + 6*7 + 1);
 	tft.print(F("Acc: "));
-	tft.print(75);
+	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].acc);
 }
 
 // Displays damage and accuracy of new move
@@ -271,12 +272,12 @@ void updateMoveStats(pixelmon *player_pxm, int selected_attack) {
 	tft.setCursor(6*5, 33 + 6*7 + 1);
 	// Clear previous text
 	tft.fillRect(6*5, 33 + 6*7 + 1, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK);
-	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].dmg);
+	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].dmg + player_pxm->level);
 	// Update accuracy
 	tft.setCursor(TFT_WIDTH/2 + 6*5, 33 + 6*7 + 1);
 	// Clear previous text
 	tft.fillRect(TFT_WIDTH/2 + 6*5, 33 + 6*7 + 1, (TFT_WIDTH-1) - TFT_WIDTH/2 + 6*5, 7, ST7735_BLACK);
-	tft.print(75);
+	tft.print(allPixelmon[player_pxm->pixelmon_id].attacks[selected_attack].acc);
 }
 
 // one of two fxns for fighting; this one does attacks
