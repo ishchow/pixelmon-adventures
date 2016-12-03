@@ -488,6 +488,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	char message[64] = {0};
 	bool flee = false;
   bool capture = false;
+	int wild_pxm_max_health = wild_pxm->health; // Store original health
   sprintf(message, "You encounter a wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
 	showMessage(message);
 	// Select pixelmon before fight
@@ -538,7 +539,11 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				showMessage(message);
 				erasePixelmon(wild_pxm_x, wild_pxm_y, ST7735_BLACK);
 				delay(500);
-				capture = random(101) <= 25;
+				int capture_threshold = 100 - map(wild_pxm->health, 0, wild_pxm_max_health, 0, 100);
+				Serial.print("capture_threshold: "); Serial.println(capture_threshold);
+				int capture_probability = random(101);
+				Serial.print("capture_probability: "); Serial.println(capture_probability);
+				capture = capture_probability <= capture_threshold;
 				if (capture) {
 					sprintf(message, "You captured wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
 					showMessage(message);
