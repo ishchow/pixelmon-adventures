@@ -12,11 +12,18 @@ static const int TFT_HEIGHT = 160; // were declared as a define.
                                    // or declare in header
 
 // fxn creates a random pixelmon with random stats
+// has a while loop to generate pixelmon based on rarity
 void generatePixelmon(pixelmon *px) {
+	int rarity;
+	if (random(101)>=90) {rarity = 2;}
+	else {rarity = 1;}
+	while (true) {
 		px->pixelmon_id = random(NUM_PIXELMON_TYPES);
-		px->level = random(1, 11);
-		px->health = 100 + (px->level)*10;
-		px->xp = 0;
+		if (allPixelmon[px->pixelmon_id].rarity == rarity) {break;}
+	}
+	px->level = random(1, 11);
+	px->health = 100 + (px->level)*10;
+	px->xp = 0;
 }
 
 // fxn to check if two pixelmon are same
@@ -45,12 +52,12 @@ void healAllOwnedPixelmon() {
 
 // fxn to show pixelmon stats on serial-mon
 void printPixelmon(pixelmon *px) {
-    Serial.println();
-    Serial.print(F("Pixelmon name: ")); Serial.println(allPixelmon[px->pixelmon_id].name);
-    Serial.print(F("\tHealth: ")); Serial.println(px->health);
-    Serial.print(F("\tLvl: ")); Serial.println(px->level);
-    Serial.print(F("\tXP: ")); Serial.println(px->xp);
-    Serial.println();
+	Serial.println();
+  Serial.print(F("Pixelmon name: ")); Serial.println(allPixelmon[px->pixelmon_id].name);
+  Serial.print(F("\tHealth: ")); Serial.println(px->health);
+  Serial.print(F("\tLvl: ")); Serial.println(px->level);
+  Serial.print(F("\tXP: ")); Serial.println(px->xp);
+  Serial.println();
 }
 
 // fxn to draw sprite on screen

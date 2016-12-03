@@ -16,6 +16,7 @@ typedef struct {
     char *name; //names should be 1-10 char long
     const uint8_t *bitmap;
     fight_move attacks[4];
+    int rarity;
 } pixelmon_type;
 
 // each individual pixelmon
