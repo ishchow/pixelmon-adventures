@@ -155,33 +155,49 @@ void loadAllPixelmon() {
 
   allPixelmon[5].name = "supaplumba";
   allPixelmon[5].bitmap = superplumber;
-  allPixelmon[5].attacks[0].name = "jump"; allPixelmon[5].attacks[0].dmg = 5;
-  allPixelmon[5].attacks[1].name = "fireball"; allPixelmon[5].attacks[1].dmg = 14;
-  allPixelmon[5].attacks[2].name = "shrooms"; allPixelmon[5].attacks[2].dmg = 20;
-  allPixelmon[5].attacks[3].name = "kill goomba"; allPixelmon[5].attacks[3].dmg = 1;
+  allPixelmon[5].attacks[0].name = "jump";
+  allPixelmon[5].attacks[0].dmg = 5; allPixelmon[5].attacks[0].acc = 95;
+  allPixelmon[5].attacks[1].name = "fireball";
+  allPixelmon[5].attacks[1].dmg = 14; allPixelmon[5].attacks[1].acc = 80;
+  allPixelmon[5].attacks[2].name = "shrooms";
+  allPixelmon[5].attacks[2].dmg = 20; allPixelmon[5].attacks[2].acc = 50;
+  allPixelmon[5].attacks[3].name = "kill goomba";
+  allPixelmon[5].attacks[3].dmg = 1; allPixelmon[5].attacks[3].acc = 100;
   allPixelmon[5].rarity = 1;
 
   allPixelmon[6].name = "richoldguy";
   allPixelmon[6].bitmap = richoldguy;
-  allPixelmon[6].attacks[0].name = "shoe"; allPixelmon[6].attacks[0].dmg = 3;
-  allPixelmon[6].attacks[1].name = "hat"; allPixelmon[6].attacks[1].dmg = 4;
-  allPixelmon[6].attacks[2].name = "monocle"; allPixelmon[6].attacks[2].dmg = 10;
-  allPixelmon[6].attacks[3].name = "monopoly"; allPixelmon[6].attacks[3].dmg = 21;
+  allPixelmon[6].attacks[0].name = "shoe";
+  allPixelmon[6].attacks[0].dmg = 3; allPixelmon[6].attacks[0].acc = 90;
+  allPixelmon[6].attacks[1].name = "hat";
+  allPixelmon[6].attacks[1].dmg = 4; allPixelmon[6].attacks[1].acc = 85;
+  allPixelmon[6].attacks[2].name = "monocle";
+  allPixelmon[6].attacks[2].dmg = 10; allPixelmon[6].attacks[2].acc = 75;
+  allPixelmon[6].attacks[3].name = "monopoly";
+  allPixelmon[6].attacks[3].dmg = 21; allPixelmon[6].attacks[3].acc = 45;
   allPixelmon[6].rarity = 1;
 
   allPixelmon[7].name = "braveman";
   allPixelmon[7].bitmap = braveman;
-  allPixelmon[7].attacks[0].name = "B*Tarang"; allPixelmon[7].attacks[0].dmg = 18;
-  allPixelmon[7].attacks[1].name = "punch"; allPixelmon[7].attacks[1].dmg = 13;
-  allPixelmon[7].attacks[2].name = "I'm B*tman"; allPixelmon[7].attacks[2].dmg = 100;
-  allPixelmon[7].attacks[3].name = "cape"; allPixelmon[7].attacks[3].dmg = 16;
+  allPixelmon[7].attacks[0].name = "B*Tarang";
+  allPixelmon[7].attacks[0].dmg = 21; allPixelmon[7].attacks[0].acc = 90;
+  allPixelmon[7].attacks[1].name = "punch";
+  allPixelmon[7].attacks[1].dmg = 13; allPixelmon[7].attacks[1].acc = 100;
+  allPixelmon[7].attacks[2].name = "I'm B*tman";
+  allPixelmon[7].attacks[2].dmg = 100; allPixelmon[7].attacks[2].acc = 50;
+  allPixelmon[7].attacks[3].name = "cape";
+  allPixelmon[7].attacks[3].dmg = 16; allPixelmon[7].attacks[3].acc = 95;
   allPixelmon[7].rarity = 2;
 
   allPixelmon[8].name = "invader";
   allPixelmon[8].bitmap = voidinvader;
-  allPixelmon[8].attacks[0].name = "laser"; allPixelmon[8].attacks[0].dmg = 18;
-  allPixelmon[8].attacks[1].name = "left"; allPixelmon[8].attacks[1].dmg = 8;
-  allPixelmon[8].attacks[2].name = "right"; allPixelmon[8].attacks[2].dmg = 8;
-  allPixelmon[8].attacks[3].name = "move down"; allPixelmon[8].attacks[3].dmg = 13;
+  allPixelmon[8].attacks[0].name = "laser";
+  allPixelmon[8].attacks[0].dmg = 18; allPixelmon[8].attacks[0].acc = 50;
+  allPixelmon[8].attacks[1].name = "left";
+  allPixelmon[8].attacks[1].dmg = 8; allPixelmon[8].attacks[1].acc = 90;
+  allPixelmon[8].attacks[2].name = "right";
+  allPixelmon[8].attacks[2].dmg = 8; allPixelmon[8].attacks[2].acc = 90;
+  allPixelmon[8].attacks[3].name = "move down";
+  allPixelmon[8].attacks[3].dmg = 13; allPixelmon[8].attacks[3].acc = 70;
   allPixelmon[8].rarity = 1;
 }
