@@ -388,35 +388,33 @@ void updateSwapMenu(int selected_pxm, int last_selected_pxm,
 }
 
 // display stats and bitmap of selected pixelmon
-void updatePixelmon(int player_pxm_x, int player_pxm_y,
-										pixelmon *player_pxm, pixelmon *last_player_pxm,
-										bool isEnemy)
+void updatePixelmon(int pxm_x, int pxm_y, pixelmon *pxm, pixelmon *last_pxm, bool isEnemy)
 {
 	int cursor_x = 0;
 	if (isEnemy) cursor_x = TFT_WIDTH/2;
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	tft.setTextWrap(false);
-	// if (player_pxm->pixelmon_id != last_player_pxm->pixelmon_id) {
+	if (pxm->pixelmon_id != last_pxm->pixelmon_id) {
     //draw bitmap of pixelmon
-		erasePixelmon(player_pxm_x, player_pxm_y, ST7735_BLACK);
-		drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
+		erasePixelmon(pxm_x, pxm_y, ST7735_BLACK);
+		drawPixelmon(pxm, pxm_x, pxm_y, ST7735_WHITE);
 		// display pixelmon name
 		tft.setCursor(cursor_x, 33);
-		tft.fillRect(cursor_x, 33, TFT_WIDTH/2, 7, ST7735_BLACK); // Clear previous name
-		tft.print(allPixelmon[player_pxm->pixelmon_id].name);
-	// }
+		tft.fillRect(cursor_x, 33, TFT_WIDTH/2, 8, ST7735_BLACK); // Clear previous name
+		tft.print(allPixelmon[pxm->pixelmon_id].name);
+	}
 	//health
-	tft.fillRect(cursor_x + 7*5, 33+8, TFT_WIDTH/2 - 7*5, 7, ST7735_BLACK); // Clear previous life
+	tft.fillRect(cursor_x + 7*5, 33+8, TFT_WIDTH/2 - 7*5, 8, ST7735_BLACK); // Clear previous life
   tft.setCursor(cursor_x + 7*5, 33+8); // After "Life: "
-	tft.print(player_pxm->health);
+	tft.print(pxm->health);
 	//level
-	tft.fillRect(cursor_x + 6*5, 33+16, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK); // Clear previous level
+	tft.fillRect(cursor_x + 6*5, 33+16, TFT_WIDTH/2 - 6*5, 8, ST7735_BLACK); // Clear previous level
   tft.setCursor(cursor_x + 6*5, 33+16); // After "Lvl: "
-	tft.print(player_pxm->level);
+	tft.print(pxm->level);
 	//xp
-	tft.fillRect(cursor_x + 6*5, 33+24, TFT_WIDTH/2 - 6*5, 7, ST7735_BLACK); // Clear previous xp
+	tft.fillRect(cursor_x + 6*5, 33+24, TFT_WIDTH/2 - 6*5, 8, ST7735_BLACK); // Clear previous xp
   tft.setCursor(cursor_x + 6*5, 33+24); // After "EXP: "
-	tft.print(player_pxm->xp);
+	tft.print(pxm->xp);
 }
 
 // makes pixelmon get xp and level up
@@ -435,10 +433,10 @@ void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 		  				pixelmon **last_player_pxm, int* selected_pxm, int* last_selected_pxm, char *message)
 {
 	uint8_t game_mode = 1;
+  if ((*player_pxm)->health == 0) { // Redraw dead pixelmon
+    drawPixelmon(*player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
+  }
 	displaySwapMenu(*selected_pxm);
-	if ((*player_pxm)->health == 0) { // Redraw dead pixelmon
-		drawPixelmon(*player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
-	}
 	while (true) {
 		int press = scanJoystick(selected_pxm, game_mode, num_pxm_owned);
 		if (*last_selected_pxm != *selected_pxm) {
@@ -470,7 +468,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
 	drawPixelmon(player_pxm, player_pxm_x, player_pxm_y, ST7735_WHITE);
 	drawPixelmon(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_WHITE);
-	// displayPixelmonStats(player_pxm, wild_pxm);
 	displayPlayerPixelmonStats(player_pxm);
 	displayEnemyPixelmonStats(wild_pxm);
 	int selected_option = 0;
@@ -491,8 +488,11 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 	char message[64] = {0};
 	bool flee = false;
   bool capture = false;
+	int wild_pxm_max_health = wild_pxm->health; // Store original health
+  sprintf(message, "You encounter a wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
+	showMessage(message);
 	// Select pixelmon before fight
-	sprintf(message, "Please select a pixelmon!");
+	sprintf(message, "Select a pixelmon!");
 	showMessage(message);
 	while(!allOwnedPixelmonDead()) { // Pick alive pixelmon
 		swapMode(&player_pxm, player_pxm_x, player_pxm_y,
@@ -539,7 +539,11 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 				showMessage(message);
 				erasePixelmon(wild_pxm_x, wild_pxm_y, ST7735_BLACK);
 				delay(500);
-				capture = random(101) <= 25;
+				int capture_threshold = 100 - map(wild_pxm->health, 0, wild_pxm_max_health, 0, 100);
+				Serial.print("capture_threshold: "); Serial.println(capture_threshold);
+				int capture_probability = random(101);
+				Serial.print("capture_probability: "); Serial.println(capture_probability);
+				capture = capture_probability <= capture_threshold;
 				if (capture) {
 					sprintf(message, "You captured wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
 					showMessage(message);

@@ -148,7 +148,7 @@ void loadAllPixelmon() {
   allPixelmon[4].attacks[2].name = "rainbow"; allPixelmon[4].attacks[2].dmg = 9;
   allPixelmon[4].attacks[3].name = "poptart"; allPixelmon[4].attacks[3].dmg = 15;
 
-  allPixelmon[5].name = "plumber";
+  allPixelmon[5].name = "supaplumba";
   allPixelmon[5].bitmap = superplumber;
   allPixelmon[5].attacks[0].name = "jump"; allPixelmon[5].attacks[0].dmg = 5;
   allPixelmon[5].attacks[1].name = "fireball"; allPixelmon[5].attacks[1].dmg = 14;
@@ -169,7 +169,7 @@ void loadAllPixelmon() {
   allPixelmon[7].attacks[2].name = "I'm B*tman"; allPixelmon[7].attacks[2].dmg = 100;
   allPixelmon[7].attacks[3].name = "cape"; allPixelmon[7].attacks[3].dmg = 16;
 
-  allPixelmon[8].name = " invader";
+  allPixelmon[8].name = "invader";
   allPixelmon[8].bitmap = voidinvader;
   allPixelmon[8].attacks[0].name = "laser"; allPixelmon[8].attacks[0].dmg = 18;
   allPixelmon[8].attacks[1].name = "left"; allPixelmon[8].attacks[1].dmg = 8;

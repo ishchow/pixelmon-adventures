@@ -291,6 +291,7 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
   int player_pxm_temp_health = 0;
   int selected_pxm = 0;
   int last_selected_pxm = 0;
+  pixelmon first_enemy_pxm = *enemy_pxm;
   pixelmon *last_player_pxm = player_pxm;
   pixelmon *last_enemy_pxm = enemy_pxm;
   // turns var.
@@ -318,8 +319,11 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
         *enemy_pxm = pixelmonClientFSM(*player_pxm);
         player_pxm_turn = true; // Client goes first
     }
+    Serial.println("enemy_pxm: "); printPixelmon(enemy_pxm);
+    Serial.println("last_enemy_pxm: "); printPixelmon(last_enemy_pxm);
+    Serial.println("first_enemy_pxm: "); printPixelmon(&first_enemy_pxm);
     displayEnemyPixelmonStats(enemy_pxm);
-    updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
+    updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, &first_enemy_pxm, isEnemy);
     //continue battle if one of 2 conditions are met
     while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && enemy_pxm->health > 0) {
       if (player_pxm_turn) { // Player
@@ -359,6 +363,8 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
                 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
                 if (player_pxm->health > 0) break;
               }
+              Serial.println("enemy_pxm: "); printPixelmon(enemy_pxm);
+              Serial.println("last_enemy_pxm: "); printPixelmon(last_enemy_pxm);
               if (digitalRead(13) == HIGH) {
                 integerServerFSM(-200);
                 last_enemy_pxm = enemy_pxm;
@@ -456,6 +462,8 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
 					 	     &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
 				if (player_pxm->health > 0) break;
 			}
+      Serial.println("enemy_pxm: "); printPixelmon(enemy_pxm);
+      Serial.println("last_enemy_pxm: "); printPixelmon(last_enemy_pxm);
       if (digitalRead(13) == HIGH) {
         last_enemy_pxm = enemy_pxm;
         *enemy_pxm = pixelmonServerFSM(*player_pxm);
