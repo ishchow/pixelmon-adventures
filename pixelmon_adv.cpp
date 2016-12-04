@@ -3,6 +3,7 @@
 #include <Adafruit_ST7735.h> // Hardware-specific library
 #include <SPI.h>
 #include <SD.h>
+#include <EEPROM.h>
 
 #include "lcd_image.h"
 #include <avr/pgmspace.h> // For PROGMEM
@@ -65,6 +66,50 @@ extern pixelmon_type allPixelmon[];
 
 int num_pxm_owned = 1; // 1 <= pxm_owned <= MAX_OWNED
 pixelmon ownedPixelmon[MAX_OWNED];
+
+extern int player_score;
+
+// show text in EEPROM
+void showEEPROM() {
+	Serial.print("The current text in EEPROM: ");
+	for (int i = 0; i < EEPROM.length() && isalnum(EEPROM[i]); ++i) {
+		Serial.write( EEPROM[i] );
+	}
+	Serial.println("");
+}
+
+// put player name in EEPROM
+void getPlayerName() {
+	showEEPROM();
+	// ask player to enter name
+	Serial.print("Enter your name (three char only): ");
+	char name[3];
+	int i=0;
+	while (i<3) {
+		while (Serial.available()==0) {}
+		int letter = Serial.read();
+		if (!isalpha(letter)) {
+			Serial.print("Letters only please!");
+		}
+		else {
+			name[i] = letter;
+			Serial.print((char)letter);
+			++i;
+		}
+	}
+ // store name in EEPROM
+	for (int j=0; j<EEPROM.length(); ++j) {
+		if (isprint(EEPROM[j])) {}
+		else {
+			for (int k = 0; k < 3; ++k) {
+				EEPROM[j+k] = name[k];
+			}
+			break;
+		}
+	}
+	Serial.println("");
+	showEEPROM();
+}
 
 //get centre position of joystick and set as default
 void calibrateJoyCentre(){
@@ -183,6 +228,7 @@ void setup() {
 
 int main() {
 	setup();
+	getPlayerName();
 	loadAllPixelmon();
 	// pixelmon enemy_pxm;
 	// generatePixelmon(&enemy_pxm);
@@ -200,15 +246,35 @@ int main() {
 		generatePixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
 		// this line is for testing; causes all pixelmon health except last to go to 0
-		// if ( i != MAX_OWNED - 2) {
-		// 	ownedPixelmon[i].health = 0;
-		// }
+		if ( i != MAX_OWNED - 2) {
+			ownedPixelmon[i].health = 0;
+		}
 		printPixelmon(&ownedPixelmon[i]);
 	}
+	ownedPixelmon[4].pixelmon_id = 1;
+	ownedPixelmon[4].health = 1;
 	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 
 	long startTime = millis();
 	while (true) {
+		if (allOwnedPixelmonDead()) {
+			Serial.print(player_score);
+			for (int j=0; j<EEPROM.length(); ++j) {
+				if (isalnum(EEPROM[j])) {}
+				else {
+					// EEPROM.put(j,player_score);
+					EEPROM[j]='0'+player_score;
+					break;
+				}
+			}
+			tft.fillScreen(ST7735_BLACK);
+			tft.setTextSize(1);
+			tft.setCursor(0,0);
+			tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+			tft.print("GAME OVER");
+			showEEPROM();
+			break;
+		}
 		if (encounter_wild_pixelmon) { // battle wild pixelmon in game mode
 			pixelmon wd; // Wild pixelmon
 			generatePixelmon(&wd);
@@ -219,7 +285,6 @@ int main() {
 			updateScreen();
 			Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
 			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
-			if (allOwnedPixelmonDead()) healAllOwnedPixelmon();
 			startTime = millis();
 		} else { // map mode
 			uint8_t game_mode = 0;

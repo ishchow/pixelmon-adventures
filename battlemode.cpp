@@ -1,4 +1,5 @@
 #include "battlemode.h"
+#include "EEPROM.h"
 
 // Dirty hacks to get rid of compiler errors
 extern Adafruit_ST7735 tft;
@@ -10,6 +11,8 @@ static const int TFT_WIDTH = 128; // Had to use this cuz TFT_WIDTH & TFT_HEIGHT
 static const int TFT_HEIGHT = 160; // were declared as a define.
                                    // Could change the #defines to const int
                                    // or declare in header
+
+int player_score = 0;
 
 // fxn creates a random pixelmon with random stats
 // has a while loop to generate pixelmon based on rarity
@@ -646,6 +649,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 		}
 		// actions for when a pixelmon (player or wild) is fainted
 		if (wild_pxm->health <= 0) {
+			player_score += 1;
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
@@ -669,9 +673,9 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 			// last_player_pxm->pixelmon_id = -1; // Garbage values for update pixelmon
 			while(!allOwnedPixelmonDead()) {
 				swapMode(&player_pxm, player_pxm_x, player_pxm_y,
-					 	 		 &last_player_pxm, &selected_pxm, &last_selected_pxm, message);
-				if (player_pxm->health > 0) break;
-			}
+					&last_player_pxm, &selected_pxm, &last_selected_pxm, message);
+					if (player_pxm->health > 0) break;
+				}
 		}
 	}
 }
