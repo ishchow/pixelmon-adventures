@@ -7,12 +7,12 @@ extern pixelmon_type allPixelmon[];
 extern pixelmon ownedPixelmon[];
 extern int num_pxm_owned;
 extern int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection);
+extern int num_scores;
+extern player current_player;
 static const int TFT_WIDTH = 128; // Had to use this cuz TFT_WIDTH & TFT_HEIGHT
 static const int TFT_HEIGHT = 160; // were declared as a define.
                                    // Could change the #defines to const int
                                    // or declare in header
-
-int player_score = 0;
 
 // fxn creates a random pixelmon with random stats
 // has a while loop to generate pixelmon based on rarity
@@ -93,7 +93,8 @@ bool execAttack(pixelmon *attacker, pixelmon *victim, int attack_id) {
 }
 
 // bmp for pixelmon blinks once
-void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y, uint16_t bmp_color, uint16_t bg_color) {
+void hitAnimation(pixelmon *injured, int16_t injured_x, int16_t injured_y,
+									uint16_t bmp_color, uint16_t bg_color) {
 	delay(500);
 	erasePixelmon(injured_x, injured_y, bg_color);
 	delay(500);
@@ -568,7 +569,8 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 		 if (player_pxm->health > 0) break;
 	}
 	//continue battle if one of 4 conditions are met
-	while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0 && !flee && !capture) {
+	while ((player_pxm->health > 0 || !allOwnedPixelmonDead()) && wild_pxm->health > 0
+				  && !flee && !capture) {
 		if (player_pxm_turn) { // Player
 			displayBattleMenu(battle_options, num_battle_options, selected_option);
 			while (true) {
@@ -649,7 +651,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 		}
 		// actions for when a pixelmon (player or wild) is fainted
 		if (wild_pxm->health <= 0) {
-			player_score += 1;
+			current_player.score += 1;
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);

@@ -67,57 +67,16 @@ extern pixelmon_type allPixelmon[];
 int num_pxm_owned = 1; // 1 <= pxm_owned <= MAX_OWNED
 pixelmon ownedPixelmon[MAX_OWNED];
 
-extern int player_score;
-
-// show text in EEPROM
-void showEEPROM() {
-	Serial.print("The current text in EEPROM: ");
-	for (int i = 0; i < EEPROM.length() && isalnum(EEPROM[i]); ++i) {
-		Serial.write( EEPROM[i] );
-	}
-	Serial.println("");
-}
-
-// put player name in EEPROM
-void getPlayerName() {
-	showEEPROM();
-	// ask player to enter name
-	Serial.print("Enter your name (three char only): ");
-	char name[3];
-	int i=0;
-	while (i<3) {
-		while (Serial.available()==0) {}
-		int letter = Serial.read();
-		if (!isalpha(letter)) {
-			Serial.print("Letters only please!");
-		}
-		else {
-			name[i] = letter;
-			Serial.print((char)letter);
-			++i;
-		}
-	}
- // store name in EEPROM
-	for (int j=0; j<EEPROM.length(); ++j) {
-		if (isprint(EEPROM[j])) {}
-		else {
-			for (int k = 0; k < 3; ++k) {
-				EEPROM[j+k] = name[k];
-			}
-			break;
-		}
-	}
-	Serial.println("");
-	showEEPROM();
-}
+int num_scores;
+player current_player;
 
 //get centre position of joystick and set as default
 void calibrateJoyCentre(){
 	g_joyCentreY = analogRead(JOY_VERT_ANALOG);
 	g_joyCentreX = analogRead(JOY_HORIZ_ANALOG);
-	Serial.println("Calibration complete");
-	Serial.print("x Calibration: "); Serial.println(g_joyCentreX);
-	Serial.print("y Calibration: "); Serial.println(g_joyCentreY);
+	Serial.println(F("Calibration complete"));
+	Serial.print(F("x Calibration: ")); Serial.println(g_joyCentreX);
+	Serial.print(F("y Calibration: ")); Serial.println(g_joyCentreY);
 }
 
 // redraw entire map (for shifting the map on the screen)
@@ -202,6 +161,96 @@ int scanJoystick(int *selection, uint8_t game_mode, uint8_t num_options){
 	return select;
 }
 
+void clearEEPROM() {
+	for (int i = 0; i < EEPROM.length(); ++i) {
+		EEPROM.update(i, 255); // 255 signifies unread
+	}
+}
+
+// Reads raw bytes from EEPROM and displays in serial monitor
+// Only displays the desired number of elements
+void displayEEPROM(int num_elements) {
+	num_elements = constrain(num_elements, 0, EEPROM.length());
+	char braces[10];
+	Serial.println();
+	for(int i = 0; i < num_elements; ++i) {
+		int val = EEPROM.read(i);
+		sprintf(braces, "[%d]", i);
+		Serial.print(F("EEPROM")); Serial.print(braces); Serial.print(": ");
+		Serial.println(val);
+	}
+	Serial.println();
+}
+
+void getNumScores() {
+	int eeprom_start = 0;
+	EEPROM.get(eeprom_start, num_scores);
+	Serial.println(F("num_scores retrieved!"));
+	Serial.print(F("num_scores: ")); Serial.println(num_scores);
+}
+
+void storeNumScores() {
+	Serial.print(F("num_scores: ")); Serial.println(num_scores);
+	int eeprom_start = 0;
+	EEPROM.put(eeprom_start, num_scores);
+	Serial.println(F("num_scores stored!"));
+}
+
+void tableToSerial() {
+	getNumScores();
+	if (num_scores == -1) return;
+	Serial.println(F("High score table: "));
+	for (int eeprom_add = sizeof(num_scores); eeprom_add < sizeof(num_scores) + num_scores*sizeof(player);
+			 eeprom_add += sizeof(player)) {
+		player selected_player;
+		EEPROM.get(eeprom_add, selected_player);
+		Serial.print(F("Name: ")); Serial.print(selected_player.name);
+		Serial.print(F(" ")); Serial.println(selected_player.score);
+	}
+}
+
+void playerToTable() {
+	getNumScores();
+	// After last entry in table
+	int eeprom_add = sizeof(num_scores) + num_scores*sizeof(player);
+	EEPROM.put(eeprom_add, current_player);
+	++num_scores;
+	storeNumScores();
+}
+
+// Retrieves player name from serial monitor
+void getPlayerName() {
+	Serial.print(F("Enter your name (three char only): "));
+	char player_name[4];
+	int i=0;
+	while (i<3) {
+		while (Serial.available()==0) {}
+		int letter = Serial.read();
+		if (!isalpha(letter)) {
+			Serial.println(F("Letters only please!"));
+			Serial.print(F("Enter your name (three char only): "));
+		}
+		else {
+			player_name[i] = letter;
+			Serial.print((char)letter);
+			++i;
+		}
+	}
+	player_name[4] = '\0';
+	Serial.println();
+	strncpy(current_player.name, player_name, sizeof(current_player.name) - 1);
+}
+
+
+// // show text in EEPROM
+// void showEEPROM() {
+// 	Serial.print("The current text in EEPROM: ");
+// 	for (int i = 0; i < EEPROM.length() && isalnum(EEPROM[i]); ++i) {
+// 		Serial.write( EEPROM[i] );
+// 	}
+// 	Serial.println("");
+// }
+
 // initialize chip, SD card, joystick
 void setup() {
 	init();
@@ -210,25 +259,56 @@ void setup() {
 	randomSeed(analogRead(7)); // for better random numbers
 	tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black or blue tab
 	// init SD card
-	Serial.print("Initializing SD card...");
+	Serial.print(F("Initializing SD card..."));
 	if (!SD.begin(SD_CS)) {
-		Serial.println("failed!");
+		Serial.println(F("failed!"));
 		return;
 	}
-	Serial.println("OK!");
+	Serial.println(F("OK!"));
 	digitalWrite(JOY_SEL, HIGH); // enable joystick internal pull-up resistor
 	// clear to black
 	tft.fillScreen(ST7735_BLACK);
 	calibrateJoyCentre();
 	update = true;
-	Serial.println("Setup Complete");
-	Serial.print("Size of pixelmon_type: "); Serial.println(sizeof(pixelmon_type));
-	Serial.print("Size of allPixelmon: "); Serial.println(sizeof(pixelmon_type)*NUM_PIXELMON_TYPES);
+	Serial.println(F("Setup Complete"));
+	Serial.print(F("Size of pixelmon_type: ")); Serial.println(sizeof(pixelmon_type));
+	Serial.print(F("Size of allPixelmon: ")); Serial.println(sizeof(pixelmon_type)*NUM_PIXELMON_TYPES);
+	// clearEEPROM();
+	getNumScores();
+	if (num_scores == -1) { // num_scores == -1 when eeprom is clear
+		num_scores = 0;
+		storeNumScores();
+	}
 }
 
 int main() {
 	setup();
-	getPlayerName();
+	// for (int i = 0; i < 10; ++i) {
+	// 	current_player.score = random(101);
+	// 	getPlayerName();
+	// 	playerToTable();
+	// }
+	// tableToSerial();
+	//
+	// address = sizeof(num_scores);
+	// player current_player;
+	// char name1[4] = "SAM";
+	// strncpy(current_player.name, name1, sizeof(current_player.name));
+	// current_player.score = 999;
+	// EEPROM.put(address, current_player);
+	//
+	// address += sizeof(player);
+	// char name2[4] = "ISH";
+	// strncpy(current_player.name, name2, sizeof(current_player.name));
+	// current_player.score = 150;
+	// EEPROM.put(address, current_player);
+
+	// num_scores = 2;
+
+	// num_scores = 5;
+	// EEPROM.put(address, num_scores);
+	// EEPROM.get(address, num_scores);
+	// Serial.print("num_scores: "); Serial.println(num_scores);
 	loadAllPixelmon();
 	// pixelmon enemy_pxm;
 	// generatePixelmon(&enemy_pxm);
@@ -253,37 +333,41 @@ int main() {
 	}
 	ownedPixelmon[4].pixelmon_id = 1;
 	ownedPixelmon[4].health = 1;
-	Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
+	Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
 
 	long startTime = millis();
 	while (true) {
 		if (allOwnedPixelmonDead()) {
-			Serial.print(player_score);
-			for (int j=0; j<EEPROM.length(); ++j) {
-				if (isalnum(EEPROM[j])) {}
-				else {
-					// EEPROM.put(j,player_score);
-					EEPROM[j]='0'+player_score;
-					break;
-				}
-			}
+			// Serial.print(player_score);
+			// for (int j=0; j<EEPROM.length(); ++j) {
+			// 	if (isalnum(EEPROM[j])) {}
+			// 	else {
+			// 		// EEPROM.put(j,player_score);
+			// 		EEPROM[j]='0'+player_score;
+			// 		break;
+			// 	}
+			// }
+			Serial.print(F("Current score: ")); Serial.println(current_player.score);
 			tft.fillScreen(ST7735_BLACK);
 			tft.setTextSize(1);
 			tft.setCursor(0,0);
 			tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-			tft.print("GAME OVER");
-			showEEPROM();
+			tft.print(F("GAME OVER"));
+			// showEEPROM();
 			break;
 		}
 		if (encounter_wild_pixelmon) { // battle wild pixelmon in game mode
 			pixelmon wd; // Wild pixelmon
+			Serial.println(F("Wild: "));
 			generatePixelmon(&wd);
+			printPixelmon(&wd);
 			tft.fillScreen(ST7735_BLACK);
 			battleMode(&ownedPixelmon[0], &wd); // Initiate battle b/w player and wild
 			encounter_wild_pixelmon = false;
 			updateMap();
 			updateScreen();
-			Serial.print("num_pxm_owned: "); Serial.println(num_pxm_owned);
+			Serial.print(F("Current score: ")); Serial.print(current_player.score);
+			Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
 			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
 			startTime = millis();
 		} else { // map mode

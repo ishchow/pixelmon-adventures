@@ -27,6 +27,12 @@ typedef struct {
     int xp; // 0 <= xp <= 9999
 } pixelmon;
 
+// holds information for each player
+typedef struct {
+    char name[4];
+    int score;
+} player;
+
 const int NUM_PIXELMON_TYPES = 9; // total number of pixelmon
 const int MAX_OWNED = 6; // max num of pixelmon player can have
 // pixelmon.bmps are all 32x32
