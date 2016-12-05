@@ -2,7 +2,6 @@
 
 // Dirty hacks to get rid of compiler errors
 extern Adafruit_ST7735 tft;
-extern pixelmon_type allPixelmon[];
 extern pixelmon ownedPixelmon[];
 extern int num_pxm_owned;
 extern int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection);

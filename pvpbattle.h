@@ -4,11 +4,7 @@
 #include <Arduino.h>
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7735.h> // Hardware-specific library
-#include <SPI.h>
-#include <SD.h>
-
-#include "lcd_image.h"
-#include <avr/pgmspace.h> // For PROGMEM
+#include <avr/pgmspace.h> // For PROGMEM and F()
 #include "pixelmondata.h"
 #include "battlemode.h"
 

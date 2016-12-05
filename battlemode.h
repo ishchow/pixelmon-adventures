@@ -4,12 +4,9 @@
 #include <Arduino.h>
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7735.h> // Hardware-specific library
-#include <SPI.h>
-#include <SD.h>
-
-#include "lcd_image.h"
-#include <avr/pgmspace.h> // For PROGMEM
+#include <avr/pgmspace.h> // For PROGMEM and F()
 #include "pixelmondata.h"
+#include "highscoretable.h"
 
 // fxn creates a random pixelmon with random stats
 void generatePixelmon(pixelmon *px);
@@ -109,6 +106,6 @@ void swapMode(pixelmon **player_pxm, int player_pxm_x , int player_pxm_y,
 int aiPickAttack(pixelmon *wild_pxm, int ai_scheme);
 
 // fxn with menu for fight, flee, swap, capture
-void battleMode(pixelmon *player_pxm, pixelmon *enemy_pxm);
+void battleMode(pixelmon *player_pxm, pixelmon *enemy_pxm, player *current_player);
 
 #endif
