@@ -256,7 +256,7 @@ int main() {
 		} else { // map mode
 			uint8_t game_mode = 0;
 			PVPChallenge = scanJoystick(NULL, game_mode, NULL);
-			if (PVPChallenge == 0) {
+			if (PVPChallenge == 0 && !Serial3) { // Only enter menu if other Arduino is connected
 				displayPVPChallengeMenu(PVP_choice, PVPYESNO);
 				while (true) { //selection pvp choice while loop
 					int press = scanJoystick(&PVP_choice, 1, 2);

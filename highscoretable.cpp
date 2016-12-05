@@ -93,16 +93,17 @@ void getPlayerName(player *current_player) {
 }
 
 // Generates specified number of elements and adds them to highscore table
-// Can overwrite the previous table if specified
+// Can overwrite the previous table if desired
 void generateTable(int num_elements, bool overwrite_table) {
 	if (overwrite_table) { // Overwrite previous table
 		clearEEPROM();
-		num_scores = 0;
+		num_scores = 0; // is == -1 after clearing, so must reset
 		storeNumScores();
 	}
 	player some_player;
 	const char* names[] = {
-		"SAM", "ISH", "VIV", "TAR", "ALI", "CNZ", "SWN", "DIL", "DON", "ARI", "TIM"
+		"SAM", "ISH", "VIV", "TAR", "ALI", "CNZ", "SHN", "DIL", "DON", "ARI", "TIM",
+		"CAR", "PRO", "ALT", "ASS"
 	};
 	const int NUM_NAMES = sizeof(names)/sizeof(names[0]);
 	const int NAME_LENGTH = sizeof(some_player.name)/sizeof(some_player.name[0]);
@@ -112,4 +113,106 @@ void generateTable(int num_elements, bool overwrite_table) {
 		strncpy(some_player.name, names[name_id], NAME_LENGTH);
 		playerToTable(&some_player);
 	}
+}
+
+// Swap two players of highscore_table struct
+void swapPlayer(player *ptr_player1, player *ptr_player2) {
+    player tmp = *ptr_player1;
+    *ptr_player1 = *ptr_player2;
+    *ptr_player2 = tmp;
+}
+
+int partition(player *highscore_table, int len, int pivot_idx) {
+  // 1. Put away the pivot by swapping it with the last element of
+  //    the array.
+  // 2. Search from both ends to out-of-order elements in the subarray
+  //    array[0:len-2] by repeating:
+  //    2.1 the low-scanner searches for first high element from
+  //        the beginning of the array but do not go beyond the
+  //        high-scanner's position
+  //    2.2 the high-scanner searches for first low element from
+  //        the end of the array but do not go beyond the
+  //        low-scanner's position
+  //    2.3 swap if found a pair of eligible elements, move scanners
+  // 3. Put the pivot back to its final position,
+  //    return the final position.
+
+  swapPlayer(&highscore_table[pivot_idx], &highscore_table[len-1]);
+  pivot_idx = len - 1;
+
+  int low_idx = 0;
+  int high_idx = len - 2;
+
+  while (true) {
+    // INVARIANT: for 0 <= k <= low_idx; a[k] <= a[pivot_idx]
+    //            for high_idx <= j <= len-1: a[j] > a[pivot_idx]
+      if (highscore_table[low_idx].score <= highscore_table[pivot_idx].score && low_idx < high_idx) {
+          ++low_idx;
+      }
+      if (highscore_table[high_idx].score > highscore_table[pivot_idx].score && high_idx > low_idx) {
+          --high_idx;
+      }
+      if (highscore_table[low_idx].score > highscore_table[pivot_idx].score &&
+          highscore_table[high_idx].score <= highscore_table[pivot_idx].score) {
+          swapPlayer(&highscore_table[low_idx], &highscore_table[high_idx]);
+          ++low_idx;
+          --high_idx;
+      }
+      if (low_idx >= high_idx) {
+          if (highscore_table[high_idx].score > highscore_table[pivot_idx].score) {
+              swapPlayer(&highscore_table[pivot_idx], &highscore_table[high_idx]);
+              pivot_idx = high_idx;
+          } else {
+              swapPlayer(&highscore_table[pivot_idx], &highscore_table[high_idx + 1]);
+              pivot_idx = high_idx + 1;
+          }
+          break;
+      }
+  }
+
+  return pivot_idx;
+}
+
+// Sorts the highscore_table in increasing order
+void qsort(player *highscore_table, int len) {
+    if (len > 1) {
+        int pivot_idx = len/2;
+        pivot_idx = partition( highscore_table, len, pivot_idx );
+
+        qsort( highscore_table, pivot_idx );
+        qsort( highscore_table+pivot_idx+1, len-pivot_idx-1 );
+    }
+}
+
+// use selection sort to sort the players in highscore_table[]
+// in increasing order
+// Running time: O(n^2)
+void ssort(player *highscore_table, int len) {
+  // i is the barrier: we want to sort highscore_table[0], ..., highscore_table[i]
+  // Invariant: highscore_table[i+1], ..., highscore_table[n-1] are the n-i-1 largest
+  // numbers in the array, and appear in sorted order
+  for (int i = len-1; i > 0; --i) {
+    int max_index = 0;
+    // Invariant: highscore_table[max_index] >= highscore_table[0],
+		// highscore_table[1], ..., highscore_table[j-1]
+    for (int j = 1; j <= i; ++j) {
+      if (highscore_table[j].score > highscore_table[max_index].score) {
+        max_index = j;
+      }
+    }
+
+    // puts the largest value among highscore_table[0], highscore_table[1], ..., highscore_table[i]
+    // at the end
+    swapPlayer(&highscore_table[i], &highscore_table[max_index]);
+  }
+
+  // post-condition: now highscore_table[1], ..., highscore_table[n-1] are the n-1
+  // largest items and appear in sorted order
+  // so highscore_table[0] <= highscore_table[1] as well and the array is sorted
+}
+
+void sortHighscoreTable(player *highscore_table) {
+	getNumScores();
+	if (num_scores > 20) qsort(highscore_table, num_scores);
+	else ssort(highscore_table, num_scores);
 }
