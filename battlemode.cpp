@@ -1,14 +1,11 @@
 #include "battlemode.h"
-#include "EEPROM.h"
 
 // Dirty hacks to get rid of compiler errors
 extern Adafruit_ST7735 tft;
-extern pixelmon_type allPixelmon[];
 extern pixelmon ownedPixelmon[];
 extern int num_pxm_owned;
 extern int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection);
-extern int num_scores;
-extern player current_player;
+// extern int num_scores;
 static const int TFT_WIDTH = 128; // Had to use this cuz TFT_WIDTH & TFT_HEIGHT
 static const int TFT_HEIGHT = 160; // were declared as a define.
                                    // Could change the #defines to const int
@@ -529,7 +526,7 @@ int aiPickAttack(pixelmon *wild_pxm, int ai_scheme) {
 }
 
 // complete fxn that uses fightmode and other fxns to conduct entire battle
-void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
+void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm, player *current_player) {
 	uint8_t game_mode = 1;
 	int player_pxm_x = 0, player_pxm_y = 0;
 	int wild_pxm_x = (TFT_WIDTH - 1) - 32, wild_pxm_y = 0;
@@ -651,7 +648,7 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm) {
 		}
 		// actions for when a pixelmon (player or wild) is fainted
 		if (wild_pxm->health <= 0) {
-			current_player.score += 1;
+			current_player->score += 1;
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
