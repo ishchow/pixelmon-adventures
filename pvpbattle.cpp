@@ -142,7 +142,7 @@ pixelmon pixelmonClientFSM( pixelmon player_pxm ) {
   long timeout = 1000;
   pixelmon enemy_pxm;
   while (true) {
-    Serial.print("pixcurrstate: ");Serial.println(curr_state);
+    // Serial.print("pixcurrstate: ");Serial.println(curr_state);
     // START state
     if (curr_state == START) {
       Serial3.write('C');
@@ -248,7 +248,7 @@ int integerClientFSM( int integerSent ) {
   long timeout = 1000;
   int integerReceived = 0;
   while (true) {
-    Serial.print("intcurrstate: ");Serial.println(curr_state);
+    // Serial.print("intcurrstate: ");Serial.println(curr_state);
     // START state
     if (curr_state == START) {
       Serial3.write('C');
@@ -474,8 +474,8 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm, player *current_pl
       updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
 		}
 	}
-  if (!allOwnedPixelmonDead()) {current_player->score -= 10;}
-  else {current_player += 10;}
+  if (allOwnedPixelmonDead()) {current_player->score -= 10;  Serial.println("score down 10");}
+  else {current_player->score += 10; Serial.println("score up 10");}
 }
 
 // menu to ask if player wants PVP

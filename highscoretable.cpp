@@ -235,14 +235,14 @@ void highscoreTableToTFT() {
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 	tft.setCursor(0, 0);
 	tft.print(F("\t\t\t\tTHE VERY BEST\t\t\t\t\n"));
-	const int NUM_SCORES_DISPLAYED = 18;
+	const int MAX_SCORES_DISPLAYED = 18;
+	const int NUM_SCORES_DISPLAYED = min(num_scores,MAX_SCORES_DISPLAYED);
 	const int FIRST_ENTRY = 160 - NUM_SCORES_DISPLAYED*8;
-	for (int i = num_scores-1, j = 0; i >= min(0,NUM_SCORES_DISPLAYED), j < NUM_SCORES_DISPLAYED;
-			 --i, ++j)
+	for (int i = 0; i < NUM_SCORES_DISPLAYED; ++i)
   {
-		tft.setCursor(0, FIRST_ENTRY + j*8);
-		tft.print(highscore_table[i].name);
-		tft.setCursor(128/2, FIRST_ENTRY + j*8);
-		tft.print(highscore_table[i].score);
+		tft.setCursor(0, FIRST_ENTRY + i*8);
+		tft.print(highscore_table[num_scores-1-i].name);
+		tft.setCursor(128/2, FIRST_ENTRY + i*8);
+		tft.print(highscore_table[num_scores-1-i].score);
 	}
 }

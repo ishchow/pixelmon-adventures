@@ -190,7 +190,7 @@ void setup() {
 	// tableToSerial();
 	// Serial.println("\n\n\n");
 	// highscoreTableToTFT();
-	// tableToSerial();
+	tableToSerial();
 	// highscoreTableToTFT();
 	// while(true) {}
 
@@ -233,7 +233,7 @@ int main() {
 		// }
 		printPixelmon(&ownedPixelmon[i]);
 	}
-	// ownedPixelmon[4].pixelmon_id = 1; // veggisaur
+	// ownedPixelmon[4].pixelmon_id = 1;
 	// ownedPixelmon[4].health = 1;
 	Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
 
@@ -248,7 +248,7 @@ int main() {
 			if (strcmp(current_player.name, "") != 0) { // Player actually enters a name
 				playerToTable(&current_player);
 			}
-			tableToSerial();
+			highscoreTableToTFT();
 			break;
 		}
 		if (encounter_wild_pixelmon) { // battle wild pixelmon in game mode

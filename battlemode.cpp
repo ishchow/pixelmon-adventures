@@ -649,6 +649,8 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm, player *current_player
 		// actions for when a pixelmon (player or wild) is fainted
 		if (wild_pxm->health <= 0) {
 			current_player->score += 1;
+			Serial.println("score up 1");
+			Serial.println(current_player->score);
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
