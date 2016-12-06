@@ -128,7 +128,7 @@ void loadAllPixelmon() {
   allPixelmon[1].name = "veggiesaur";
   allPixelmon[1].bitmap = veggiesaur;
   allPixelmon[1].attacks[0].name = "scream";
-  allPixelmon[1].attacks[0].dmg = 500; allPixelmon[1].attacks[0].acc = 100;
+  allPixelmon[1].attacks[0].dmg = 5; allPixelmon[1].attacks[0].acc = 95;
   allPixelmon[1].attacks[1].name = "pounce";
   allPixelmon[1].attacks[1].dmg = 11; allPixelmon[1].attacks[1].acc = 65;
   allPixelmon[1].attacks[2].name = "chomp";
@@ -164,13 +164,13 @@ void loadAllPixelmon() {
   allPixelmon[4].name = "pixelcat";
   allPixelmon[4].bitmap = pixelcat;
   allPixelmon[4].attacks[0].name = "nyan";
-  allPixelmon[4].attacks[0].dmg = 19; allPixelmon[4].attacks[0].acc = 40;
+  allPixelmon[4].attacks[0].dmg = 19; allPixelmon[4].attacks[0].acc = 60;
   allPixelmon[4].attacks[1].name = "catscratch";
   allPixelmon[4].attacks[1].dmg = 10; allPixelmon[4].attacks[1].acc = 95;
   allPixelmon[4].attacks[2].name = "rainbow";
-  allPixelmon[4].attacks[2].dmg = 9; allPixelmon[4].attacks[2].acc = 20;
+  allPixelmon[4].attacks[2].dmg = 9; allPixelmon[4].attacks[2].acc = 80;
   allPixelmon[4].attacks[3].name = "poptart";
-  allPixelmon[4].attacks[3].dmg = 15; allPixelmon[4].attacks[3].acc = 50;
+  allPixelmon[4].attacks[3].dmg = 15; allPixelmon[4].attacks[3].acc = 75;
   allPixelmon[4].rarity = 2;
 
   allPixelmon[5].name = "supaplumba";

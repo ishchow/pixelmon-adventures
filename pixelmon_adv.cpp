@@ -190,9 +190,9 @@ void setup() {
 	// tableToSerial();
 	// Serial.println("\n\n\n");
 	// highscoreTableToTFT();
-	tableToSerial();
-	highscoreTableToTFT();
-	while(true) {}
+	// tableToSerial();
+	// highscoreTableToTFT();
+	// while(true) {}
 
 }
 
@@ -217,8 +217,6 @@ int main() {
 	tft.print(message);
 	delete[] message;
 	delay(2500);
-	Serial.print(F("If Serial: ")); Serial.println(Serial);
-	Serial.print(F("If Serial3: ")); Serial.println(Serial3);
 	updateMap();
 	int PVPChallenge = 1;
 	int PVP_choice = 0;
@@ -230,12 +228,12 @@ int main() {
 		generatePixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
 		// this line is for testing; causes all pixelmon health except last to go to 0
-		if ( i != MAX_OWNED - 2) {
-			ownedPixelmon[i].health = 0;
-		}
+		// if ( i != MAX_OWNED - 2) {
+		// 	ownedPixelmon[i].health = 0;
+		// }
 		printPixelmon(&ownedPixelmon[i]);
 	}
-	ownedPixelmon[4].pixelmon_id = 1; // veggisaur
+	// ownedPixelmon[4].pixelmon_id = 1; // veggisaur
 	// ownedPixelmon[4].health = 1;
 	Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
 
@@ -294,7 +292,7 @@ int main() {
 						pixelmon enemy_pxm = {-1, 0, 0, 0};
 						// generatePixelmon(&enemy_pxm);
 						tft.fillScreen(ST7735_BLACK);
-						PVPbattleMode(&ownedPixelmon[0], &enemy_pxm);
+						PVPbattleMode(&ownedPixelmon[0], &enemy_pxm, &current_player);
 						updateMap();
 						updateScreen();
 						startTime = millis();

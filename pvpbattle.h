@@ -43,7 +43,7 @@ int integerServerFSM( int integerSent );
 int integerClientFSM( int integerSent );
 
 // complete fxn that uses fightmode and other fxns to conduct a pvp battle
-void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm, player *current_player));
+void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm, player *current_player);
 
 // menu to ask if player wants PVP
 void displayPVPChallengeMenu(int PVP_choice, const char *PVPYESNO[]);

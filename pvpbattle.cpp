@@ -273,7 +273,7 @@ int integerClientFSM( int integerSent ) {
 }
 
 // complete fxn that uses fightmode and other fxns to conduct a pvp battle
-void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm, player *current_player)) {
+void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm, player *current_player) {
   uint8_t game_mode = 1;
   int player_pxm_x = 0, player_pxm_y = 0;
   int enemy_pxm_x = (TFT_WIDTH - 1) - 32, enemy_pxm_y = 0;
