@@ -36,6 +36,8 @@
 
 #define INV_SPRITE_SPEED 50
 
+#define PVP_TOGGLE_PIN 2 // enables (+5V) or disables (GND) PVPMode
+
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 Sd2Card card;
 
@@ -182,8 +184,16 @@ void setup() {
 	Serial.println(F("Setup Complete"));
 	Serial.print(F("Size of pixelmon_type: ")); Serial.println(sizeof(pixelmon_type));
 	Serial.print(F("Size of allPixelmon: ")); Serial.println(sizeof(pixelmon_type)*NUM_PIXELMON_TYPES);
-	// clearEEPROM();
 	getNumScores();
+
+	// generateTable(50, true);
+	// tableToSerial();
+	// Serial.println("\n\n\n");
+	// highscoreTableToTFT();
+	tableToSerial();
+	highscoreTableToTFT();
+	while(true) {}
+
 }
 
 int main() {
@@ -201,12 +211,14 @@ int main() {
 	getPlayerName(&current_player);
 	tft.fillRect(0, 64, TFT_WIDTH, 6*8, ST7735_BLACK); // Clear previous text
 	char* message = new char[64];
-	sprintf(message, "Good luck on your journey, %s! Your current score is %d.", current_player.name, current_player.score);
+	sprintf(message, "Good luck, %s!\nYour current score is %d.",
+					current_player.name, current_player.score);
 	tft.setCursor(0, 64);
 	tft.print(message);
 	delete[] message;
 	delay(2500);
-
+	Serial.print(F("If Serial: ")); Serial.println(Serial);
+	Serial.print(F("If Serial3: ")); Serial.println(Serial3);
 	updateMap();
 	int PVPChallenge = 1;
 	int PVP_choice = 0;
@@ -256,7 +268,8 @@ int main() {
 		} else { // map mode
 			uint8_t game_mode = 0;
 			PVPChallenge = scanJoystick(NULL, game_mode, NULL);
-			if (PVPChallenge == 0 && !Serial3) { // Only enter menu if other Arduino is connected
+			// Only enter menu if other Arduino is connected
+			if (PVPChallenge == 0 && digitalRead(PVP_TOGGLE_PIN) == HIGH) {
 				displayPVPChallengeMenu(PVP_choice, PVPYESNO);
 				while (true) { //selection pvp choice while loop
 					int press = scanJoystick(&PVP_choice, 1, 2);
@@ -270,7 +283,7 @@ int main() {
 						break;
 					}
 				}
-				if (PVP_choice == 0) { // Player enters PVP Mode
+				if (PVP_choice == 0 && digitalRead(PVP_TOGGLE_PIN) == HIGH) { // Player enters PVP Mode
 					if (digitalRead(13) == HIGH) {
 						battleConfirm = integerServerFSM(-1000);
 					}

@@ -1,4 +1,8 @@
 #include "highscoretable.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7735.h>
+
+extern Adafruit_ST7735 tft;
 
 int num_scores = 0;
 
@@ -40,7 +44,6 @@ void getNumScores() {
 	Serial.println(F("num_scores retrieved!"));
 	Serial.print(F("num_scores: ")); Serial.println(num_scores);
 }
-
 
 // Print highscore table to serial-monitor
 void tableToSerial() {
@@ -103,7 +106,7 @@ void generateTable(int num_elements, bool overwrite_table) {
 	player some_player;
 	const char* names[] = {
 		"SAM", "ISH", "VIV", "TAR", "ALI", "CNZ", "SHN", "DIL", "DON", "ARI", "TIM",
-		"CAR", "PRO", "ALT", "ASS"
+		"CAR", "PRO", "ALT"
 	};
 	const int NUM_NAMES = sizeof(names)/sizeof(names[0]);
 	const int NAME_LENGTH = sizeof(some_player.name)/sizeof(some_player.name[0]);
@@ -211,8 +214,35 @@ void ssort(player *highscore_table, int len) {
   // so highscore_table[0] <= highscore_table[1] as well and the array is sorted
 }
 
-void sortHighscoreTable(player *highscore_table) {
+void highscoreTableToTFT() {
 	getNumScores();
+	player highscore_table[num_scores];
+	for (int eeprom_add = sizeof(num_scores), i = 0;
+			 eeprom_add < sizeof(num_scores) + num_scores*sizeof(player), i < num_scores;
+			 eeprom_add += sizeof(player), ++i)
+	{
+		EEPROM.get(eeprom_add, highscore_table[i]);
+	}
+	// Sort in increasing order
 	if (num_scores > 20) qsort(highscore_table, num_scores);
 	else ssort(highscore_table, num_scores);
+	// for(int i = num_scores-1; i >= 0; --i) {
+	// 	Serial.print(F("Name: ")); Serial.print(highscore_table[i].name);
+	// 	Serial.print(F(" ")); Serial.println(highscore_table[i].score);
+	// }
+	tft.setTextSize(1);
+	tft.setTextWrap(false);
+	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+	tft.setCursor(0, 0);
+	tft.print(F("\t\t\t\tTHE VERY BEST\t\t\t\t\n"));
+	const int NUM_SCORES_DISPLAYED = 18;
+	const int FIRST_ENTRY = 160 - NUM_SCORES_DISPLAYED*8;
+	for (int i = num_scores-1, j = 0; i >= min(0,NUM_SCORES_DISPLAYED), j < NUM_SCORES_DISPLAYED;
+			 --i, ++j)
+  {
+		tft.setCursor(0, FIRST_ENTRY + j*8);
+		tft.print(highscore_table[i].name);
+		tft.setCursor(128/2, FIRST_ENTRY + j*8);
+		tft.print(highscore_table[i].score);
+	}
 }

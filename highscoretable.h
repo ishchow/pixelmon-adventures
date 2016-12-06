@@ -38,4 +38,6 @@ void getPlayerName(player *current_player);
 // Can overwrite the previous table if specified
 void generateTable(int num_elements, bool overwrite_table);
 
+void highscoreTableToTFT();
+
 #endif
