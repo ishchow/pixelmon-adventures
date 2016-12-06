@@ -1,4 +1,5 @@
 #include "pvpbattle.h"
+#include "highscoretable.h"
 
 // Dirty hacks to get rid of compiler errors
 extern Adafruit_ST7735 tft;
@@ -272,7 +273,7 @@ int integerClientFSM( int integerSent ) {
 }
 
 // complete fxn that uses fightmode and other fxns to conduct a pvp battle
-void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
+void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm, player *current_player)) {
   uint8_t game_mode = 1;
   int player_pxm_x = 0, player_pxm_y = 0;
   int enemy_pxm_x = (TFT_WIDTH - 1) - 32, enemy_pxm_y = 0;
@@ -473,6 +474,8 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm) {
       updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
 		}
 	}
+  if (!allOwnedPixelmonDead()) {current_player->score -= 10;}
+  else {current_player += 10;}
 }
 
 // menu to ask if player wants PVP
