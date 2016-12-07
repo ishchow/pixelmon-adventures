@@ -195,12 +195,12 @@ void updateHealth(pixelmon *player_pxm, pixelmon *enemy_pxm, char hit_pxm) {
 	tft.setTextWrap(false);
 	if (hit_pxm == 'p') { // Player
 		tft.setCursor(7*5,33+8);
-		tft.fillRect(7*5, 33+8, TFT_WIDTH/2 - 7*5, 7, ST7735_BLACK); // Clear previous health
+		tft.fillRect(7*5, 33+8, TFT_WIDTH/2 - 7*5, 8, ST7735_BLACK); // Clear previous health
 		tft.print(player_pxm->health);
 	} else if (hit_pxm == 'e') { // Enemy
 		tft.setCursor(TFT_WIDTH/2 + 7*5, 33+8);
 		// Clear previous health
-		tft.fillRect(TFT_WIDTH/2 + 7*5, 33+8, (TFT_WIDTH-1) - (TFT_WIDTH/2 + 7*5), 7, ST7735_BLACK);
+		tft.fillRect(TFT_WIDTH/2 + 7*5, 33+8, (TFT_WIDTH-1) - (TFT_WIDTH/2 + 7*5), 8, ST7735_BLACK);
 		tft.print(enemy_pxm->health);
 	}
 }
