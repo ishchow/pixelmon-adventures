@@ -3,6 +3,8 @@
 #include <Adafruit_ST7735.h>
 
 extern Adafruit_ST7735 tft;
+static const int TFT_WIDTH = 128;
+static const int TFT_HEIGHT = 160;
 
 int num_scores = 0;
 
@@ -16,12 +18,12 @@ void clearEEPROM() {
 // Only displays the desired number of elements
 void displayEEPROM(int num_elements) {
 	num_elements = constrain(num_elements, 0, EEPROM.length());
-	char braces[10];
+	char brackets[10];
 	Serial.println();
 	for(int i = 0; i < num_elements; ++i) {
 		int val = EEPROM.read(i);
-		sprintf(braces, "[%d]", i);
-		Serial.print(F("EEPROM")); Serial.print(braces); Serial.print(": ");
+		sprintf(brackets, "[%d]", i);
+		Serial.print(F("EEPROM")); Serial.print(brackets); Serial.print(": ");
 		Serial.println(val);
 	}
 	Serial.println();
@@ -50,8 +52,10 @@ void tableToSerial() {
 	getNumScores();
 	if (num_scores == -1) return;
 	Serial.println(F("High score table: "));
-	for (int eeprom_add = sizeof(num_scores); eeprom_add < sizeof(num_scores) + num_scores*sizeof(player);
-			 eeprom_add += sizeof(player)) {
+	for (int eeprom_add = sizeof(num_scores);
+			 eeprom_add < sizeof(num_scores) + num_scores*sizeof(player);
+			 eeprom_add += sizeof(player))
+	{
 		player selected_player;
 		EEPROM.get(eeprom_add, selected_player);
 		Serial.print(F("Name: ")); Serial.print(selected_player.name);
@@ -60,7 +64,7 @@ void tableToSerial() {
 }
 
 // Append player name and score to table
-void playerToTable(player* current_player) {
+void playerToEEPROM(player* current_player) {
 	getNumScores();
 	// After last entry in table
 	int eeprom_add = sizeof(num_scores) + num_scores*sizeof(player);
@@ -78,10 +82,6 @@ void getPlayerName(player *current_player) {
 	while (i<3) {
 		while (Serial.available()==0) {}
 		int letter = Serial.read();
-		// if (!isalpha(letter)) {
-		// 	Serial.println(F("Letters only please!"));
-		// 	Serial.print(F("Enter your name (three char only): "));
-		// }
 		if(isalpha(letter)) {
 			letter = toupper(letter);
 			player_name[i] = letter;
@@ -92,7 +92,6 @@ void getPlayerName(player *current_player) {
 	player_name[NAME_LENGTH-1] = '\0';
 	Serial.println();
 	strncpy(current_player->name, player_name, NAME_LENGTH);
-	// Serial.print("Player name: "); Serial.println(current_player->name);
 }
 
 // Generates specified number of elements and adds them to highscore table
@@ -114,7 +113,7 @@ void generateTable(int num_elements, bool overwrite_table) {
 		some_player.score = random(101);
 		int name_id = random(NUM_NAMES);
 		strncpy(some_player.name, names[name_id], NAME_LENGTH);
-		playerToTable(&some_player);
+		playerToEEPROM(&some_player);
 	}
 }
 
@@ -177,6 +176,8 @@ int partition(player *highscore_table, int len, int pivot_idx) {
 }
 
 // Sorts the highscore_table in increasing order
+// Running time: O(nlogn) [Average] O(n^2) [Worst-case]
+// Space complexity: O(logn) [Average] O(n) [Worst-case]
 void qsort(player *highscore_table, int len) {
     if (len > 1) {
         int pivot_idx = len/2;
@@ -187,8 +188,7 @@ void qsort(player *highscore_table, int len) {
     }
 }
 
-// use selection sort to sort the players in highscore_table[]
-// in increasing order
+// use selection sort to sort the players in highscore_table[] in increasing order
 // Running time: O(n^2)
 void ssort(player *highscore_table, int len) {
   // i is the barrier: we want to sort highscore_table[0], ..., highscore_table[i]
@@ -214,9 +214,11 @@ void ssort(player *highscore_table, int len) {
   // so highscore_table[0] <= highscore_table[1] as well and the array is sorted
 }
 
+// Displays highscore table on TFT display
 void highscoreTableToTFT() {
 	getNumScores();
 	player highscore_table[num_scores];
+	// Load highscore table
 	for (int eeprom_add = sizeof(num_scores), i = 0;
 			 eeprom_add < sizeof(num_scores) + num_scores*sizeof(player), i < num_scores;
 			 eeprom_add += sizeof(player), ++i)
@@ -226,10 +228,6 @@ void highscoreTableToTFT() {
 	// Sort in increasing order
 	if (num_scores > 20) qsort(highscore_table, num_scores);
 	else ssort(highscore_table, num_scores);
-	// for(int i = num_scores-1; i >= 0; --i) {
-	// 	Serial.print(F("Name: ")); Serial.print(highscore_table[i].name);
-	// 	Serial.print(F(" ")); Serial.println(highscore_table[i].score);
-	// }
 	tft.setTextSize(1);
 	tft.setTextWrap(false);
 	tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
@@ -237,12 +235,12 @@ void highscoreTableToTFT() {
 	tft.print(F("\t\t\t\tTHE VERY BEST\t\t\t\t\n"));
 	const int MAX_SCORES_DISPLAYED = 18;
 	const int NUM_SCORES_DISPLAYED = min(num_scores,MAX_SCORES_DISPLAYED);
-	const int FIRST_ENTRY = 160 - NUM_SCORES_DISPLAYED*8;
+	const int FIRST_ENTRY = TFT_HEIGHT - NUM_SCORES_DISPLAYED*8;
 	for (int i = 0; i < NUM_SCORES_DISPLAYED; ++i)
   {
 		tft.setCursor(0, FIRST_ENTRY + i*8);
 		tft.print(highscore_table[num_scores-1-i].name);
-		tft.setCursor(128/2, FIRST_ENTRY + i*8);
+		tft.setCursor(TFT_WIDTH/2, FIRST_ENTRY + i*8);
 		tft.print(highscore_table[num_scores-1-i].score);
 	}
 }

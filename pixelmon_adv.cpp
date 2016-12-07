@@ -66,7 +66,7 @@ bool update = false;
 // If true, used to enter battle mode
 bool encounter_wild_pixelmon = 0;
 
-extern pixelmon_type allPixelmon[];
+extern pixelmon_type allPixelmon[]; // defined in "pixelmondata.cpp"
 
 int num_pxm_owned = 1; // 1 <= pxm_owned <= MAX_OWNED
 pixelmon ownedPixelmon[MAX_OWNED];
@@ -186,14 +186,11 @@ void setup() {
 	Serial.print(F("Size of allPixelmon: ")); Serial.println(sizeof(pixelmon_type)*NUM_PIXELMON_TYPES);
 	getNumScores();
 
-	// generateTable(50, true);
+	// For testing the highscore table
+	// generateTable(10, true);
 	// tableToSerial();
-	// Serial.println("\n\n\n");
-	// highscoreTableToTFT();
-	tableToSerial();
 	// highscoreTableToTFT();
 	// while(true) {}
-
 }
 
 int main() {
@@ -228,13 +225,13 @@ int main() {
 		generatePixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
 		// this line is for testing; causes all pixelmon health except last to go to 0
-		// if ( i != MAX_OWNED - 2) {
-		// 	ownedPixelmon[i].health = 0;
-		// }
+		if ( i != MAX_OWNED - 2) {
+			ownedPixelmon[i].health = 0;
+		}
 		printPixelmon(&ownedPixelmon[i]);
 	}
-	// ownedPixelmon[4].pixelmon_id = 1;
-	// ownedPixelmon[4].health = 1;
+	ownedPixelmon[4].pixelmon_id = 1;
+	ownedPixelmon[4].health = 1;
 	Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
 
 	long startTime = millis();
@@ -242,12 +239,18 @@ int main() {
 		if (allOwnedPixelmonDead()) {
 			tft.fillScreen(ST7735_BLACK);
 			tft.setTextSize(1);
-			tft.setCursor(0,0);
+			tft.setCursor((TFT_WIDTH-6*strlen("GAME OVER"))/2, TFT_HEIGHT/2);
 			tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 			tft.print(F("GAME OVER"));
+			tft.setCursor((TFT_WIDTH-6*strlen("GAME OVER"))/2, TFT_HEIGHT/2 + 1*8);
+			tft.print(F("Name: ")); tft.print(current_player.name); tft.print(F("\n"));
+			tft.setCursor((TFT_WIDTH-6*strlen("GAME OVER"))/2, TFT_HEIGHT/2 + 2*8);
+			tft.print(F("Score: ")); tft.print(current_player.score);
+			delay(2500);
 			if (strcmp(current_player.name, "") != 0) { // Player actually enters a name
-				playerToTable(&current_player);
+				playerToEEPROM(&current_player);
 			}
+			tft.fillScreen(ST7735_BLACK);
 			highscoreTableToTFT();
 			break;
 		}

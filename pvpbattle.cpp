@@ -474,8 +474,18 @@ void PVPbattleMode(pixelmon *player_pxm, pixelmon *enemy_pxm, player *current_pl
       updatePixelmon(enemy_pxm_x, enemy_pxm_y, enemy_pxm, last_enemy_pxm, isEnemy);
 		}
 	}
-  if (allOwnedPixelmonDead()) {current_player->score -= 10;  Serial.println("score down 10");}
-  else {current_player->score += 10; Serial.println("score up 10");}
+  if (allOwnedPixelmonDead()) {
+    current_player->score -= 10;
+    Serial.println("score down 10");
+    sprintf(message, "You score went down by 10! Your new score is %d.", current_player->score);
+    showMessage(message);
+  }
+  else {
+    current_player->score += 10;
+    Serial.println("score up 10");
+    sprintf(message, "You score went up by 10! Your new score is %d.", current_player->score);
+    showMessage(message);
+  }
 }
 
 // menu to ask if player wants PVP

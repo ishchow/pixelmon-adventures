@@ -1,11 +1,10 @@
 #include "battlemode.h"
 
 // Dirty hacks to get rid of compiler errors
-extern Adafruit_ST7735 tft;
+extern Adafruit_ST7735 tft; // Defined in "pixelmon_adv.cpp"
 extern pixelmon ownedPixelmon[];
 extern int num_pxm_owned;
 extern int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection);
-// extern int num_scores;
 static const int TFT_WIDTH = 128; // Had to use this cuz TFT_WIDTH & TFT_HEIGHT
 static const int TFT_HEIGHT = 160; // were declared as a define.
                                    // Could change the #defines to const int
@@ -648,9 +647,6 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm, player *current_player
 		}
 		// actions for when a pixelmon (player or wild) is fainted
 		if (wild_pxm->health <= 0) {
-			current_player->score += 1;
-			Serial.println("score up 1");
-			Serial.println(current_player->score);
 			sprintf(message, "Wild %s fainted!", allPixelmon[wild_pxm->pixelmon_id].name);
 			showMessage(message);
 			deathAnimation(wild_pxm, wild_pxm_x, wild_pxm_y, ST7735_BLACK);
@@ -665,6 +661,11 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm, player *current_player
         // Show stats (most importantly level) after level up
         updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, isEnemy);
 			}
+			current_player->score += 1;
+			Serial.println("score up 1");
+			Serial.println(current_player->score);
+			sprintf(message, "You score went up by 1! Your new score is %d.", current_player->score);
+			showMessage(message);
 			eraseMenu();
 		} else if (player_pxm->health <= 0) {
 			sprintf(message, "%s fainted!", allPixelmon[player_pxm->pixelmon_id].name);
