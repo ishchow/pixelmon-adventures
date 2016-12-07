@@ -3,15 +3,15 @@
 #include <Adafruit_ST7735.h> // Hardware-specific library
 #include <SPI.h>
 #include <SD.h>
-#include <EEPROM.h>
-
-#include "lcd_image.h"
 #include <avr/pgmspace.h> // For PROGMEM and F()
+
+#include "EEPROM.h"
+#include "ArduinoExtras.h"
+#include "lcd_image.h"
 #include "pixelmondata.h" //loads pixelmon data types and data
 #include "battlemode.h" //pixelmon stats, battlemode, menus
 #include "pvpbattle.h" // for pvp pixelmon battles
 #include "highscoretable.h" // for high score table
-#include "ArduinoExtras.h"
 
 // Display pins:
 // standard U of A library settings, assuming Atmel Mega SPI pins
