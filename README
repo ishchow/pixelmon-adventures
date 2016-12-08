@@ -77,6 +77,11 @@ Assumptions
 * It is assumed that one Arduino has pin 13 connected to ground and one Arduino
   has pin 13 connected to 5V for multiplayer mode.
 
+* It is assumed that both players will connect digital pin 2 to 5V. Otherwise, if
+  one player has their digital pin 2 connected to 5V but the other player does
+  not, then the player who does not will get stuck in the PVP menu waiting for a
+  response from the other player.
+
 * It is assumed that the EEPROM is clear for the very first run of the game, as
   the high score table assumes a very specific layout of the EEPROM in order to
   function. If the EEPROM is not clear, then run upload the sketch under
