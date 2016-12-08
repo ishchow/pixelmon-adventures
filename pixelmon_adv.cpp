@@ -224,14 +224,7 @@ int main() {
 	for (int i = 0; i < 3; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
-		// this line is for testing; causes all pixelmon health except last to go to 0
-		// if ( i != MAX_OWNED - 2) {
-		// 	ownedPixelmon[i].health = 0;
-		// }
-		// printPixelmon(&ownedPixelmon[i]);
 	}
-	// ownedPixelmon[4].pixelmon_id = 1;
-	// ownedPixelmon[4].health = 1;
 	// Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
 
 	long startTime = millis();
