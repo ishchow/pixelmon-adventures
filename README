@@ -45,7 +45,12 @@ Arduino 2 Digital Pin 13 <--> Resistor(any) <--> Bread Board Negative Bus <--> G
 +Arduino 1 TX3 <--> Arduino 2 RX3
 +Arduino 1 RX3 <--> Arduino 2 TX3
 
-+The use of 2 Female/Female Jumper Wires makes multiplayer more comfortable
+For proper orientation of the joystick view the image orientation.jpg
+
++ The use of 2 Female/Female Jumper Wires can make multiplayer more comfortable
++ However, it can also cause pvp mode to not function if wires are faulty.
++ If the use of F/F Jumper Wires causes too much frustration, then it is advisable
++ to play without them
 
 --------------------------------------------------------------------------------
 How to run code
@@ -78,16 +83,114 @@ Assumptions
   /cleareeprom/ using "make upload && serial-mon"
 
 --------------------------------------------------------------------------------
-Additional Functionality
+Code Layout
 --------------------------------------------------------------------------------
+Headers:
+* pixelmondata.cpp/.h
+    - contains definitions of structs used to represent the type of pixelmon
+      (ie. veggisaur, invader etc.) and the characteristics of an individual
+      pixelmon (ie. id, health etc.)
+    - contains definitons of arrays used to store image data for the pixelmon
+    - contains function to load all pixelmon types
+* battlemode.cpp/.h:
+    - contains helper functions used for mulitplayer and ai battle mode
+      (animations, menus, etc.)
+    - contains logic for ai battle mode in the function battleMode()
+* pvpbattle.cpp/.h
+    - contains functions to send, receive, and exchange data using serial
+      communication
+    - contains logic for pvp battle mode in the function PVPbattleMode()
+* highscoretable.cpp/.h
+    - contains helper functions for working with the highscore table stored in
+      the EEPROM and the EEPROM in general
+    - contains implementations of quicksort and selection sort
+    - contains definiton of struct used to represent player data (name and score)
+    - contains logic for retrieving, sorting, and displaying highscore table
+      to tft display in function highscoreTableToTFT()
+
+Main project code:
+* pixelmon_adv.cpp
+    - contains declaration of input/output pins
+    - contains functions for drawing the map and the player's sprite
+    - contains functions for moving around the map and reading values from the
+      the joystick (the scanJoystick() function is used in mulitiple files via extern)
+    - contains logic for displaying and updating a menu allowing users to
+      enter mulitplayer mode (if it 5V is fed to Digital Pin 2 via a resistor)
+    - contains overall game logic, welcome screen, and game over screen in main()
+
+External libraries:
+* ArduinoExtras.cpp/.h: contains new[] and delete[]
+* EEPROM.h: contains functions used to access EEPROM (mainly for highscore table)
+* lcd_image.cpp/.h: used to draw lcd images to screen (mainly for map and sprite)
+
+Auxillary sketches:
+* /cleareeprom
+    - used to clear EEPROM if it is not clear during very first run of game
+    - run "make upload" in the directory /cleareeprom in order to clear EEPROM
+    - should display "EEPROM Clear" in serial-monitor if successful
+
+--------------------------------------------------------------------------------
+How to Play
+--------------------------------------------------------------------------------
+Before you start playing:
+You will be prompted to enter your name in the serial-monitor. The game will wait
+indefinitely for a response. You will then be given three random pixelmon to start
+off with on your journey to become THE VERY BEST. Then, you will spawn at the center
+of the map.
+
+Map navigation:
+Move the joystick Up/Down/Left/Right to move in the desired direction. When moving
+around the map, wild pixelmon will confront and try to battle you!
+
+Battle Mode Gameplay Mechanics:
+Immediately upon entering a battle (wheter against an ai or a human opponent)
+you will be allowed to choose the pixelmon you would like to battle with.
+* Fight:
+    - pick and execute an attack based on damage and accuracy
+    - note: the higher a pixelmon's level is, the higher the damage dealt will be
+    - note: your opponent's pixelmon can dodge if attack fails
+* Swap
+    - allows user to battle with another pixelmon
+    - this mode is entered after your current pixelmon's health reaches 0
+      (if you still have live pixelmon left to battle with)
+* Flee [AI BATTLE MODE ONLY]:
+    - immediately exits fight and returns to map
+* Capture [AI BATTLE MODE ONLY]:
+    - attempts to capture the wild pixelmon if the player has space in their
+      collection (a player can only own 6 pixelmon)
+    - otherwise, shows a message that their collection is full and their turn is
+      over
+    - if succesful, adds wild pixelmon to your collection
+      - note: chance of success increases as the wild pixelmon's health decreases
+
+Enemy AI:
+The enemy AI operate according to the various schemes. An AI scheme is randomly
+chosen when the wild pixelmon is generated. The wild pixelmon uses the same
+AI scheme for the entirety of the encounter.
+* Dumb: chooses a random attack
+* Aggressive: chooses the attack with the highest damage
+* Convervative: chooses the attack with the highest accuracy
+* Smart: chooses the attack with the highest effective damage, ie. the highest
+         cumulative damage dealt if that attack is used 100 times
+
+Game Over:
+After all of a player's pixelmon have died, they exit from map mode and are
+brought to a game over screen. Then, their name and score are briefly displayed
+on the tft display before a high score table is shown.
 
 Multiplayer/PVP Mode:
-To enter the multiplayer (PVP) mode, press the joystick when you are in map mode.
-Then select either yes (enter PVP mode) or no (return to map mode).
+To enter the multiplayer (PVP) menu, press the joystick when you are in map mode.
+(Assuming Digital Pin 2 is connected to 5V, otherwise pressing the joystick does nothing)
+Then, select either yes (enter PVP mode) or no (return to map mode).
 
 User-Added Content:
-The user may add his or her own pixelmon if they have the correct file format
-(convert images to array for Arduino at http://javl.github.io/image2cpp/) and by
-creating his or her own values for name, attacks, and damage in the
-pixelmondata.cpp file (be sure to change the variable NUM_PIXELMON_TYPES in the
-pixelmondata.h header file as well).
+The user may add his or her own pixelmon by converting images to array for
+Arduino at http://javl.github.io/image2cpp/. The images must be scaled to 32 by
+32 however in order to display properly. Then, creating his or her own values
+for name, attacks, and damage in the pixelmondata.cpp file (be sure to change
+the variable NUM_PIXELMON_TYPES in the pixelmondata.h header file as well).
+
+--------------------------------------------------------------------------------
+Miscellaneous
+--------------------------------------------------------------------------------
+Github repo: https://github.com/ishchow/pixelmon-adventures
