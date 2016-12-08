@@ -2,7 +2,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
 
-extern Adafruit_ST7735 tft;
+extern Adafruit_ST7735 tft; // Defined in "pixelmon_adv.cpp"
 static const int TFT_WIDTH = 128;
 static const int TFT_HEIGHT = 160;
 
@@ -30,10 +30,10 @@ void displayEEPROM(int num_elements) {
 }
 
 void storeNumScores() {
-	Serial.print(F("num_scores: ")); Serial.println(num_scores);
+	// Serial.print(F("num_scores: ")); Serial.println(num_scores);
 	int eeprom_start = 0;
 	EEPROM.put(eeprom_start, num_scores);
-	Serial.println(F("num_scores stored!"));
+	// Serial.println(F("num_scores stored!"));
 }
 
 void getNumScores() {
@@ -43,8 +43,8 @@ void getNumScores() {
 		num_scores = 0;
 		storeNumScores();
 	}
-	Serial.println(F("num_scores retrieved!"));
-	Serial.print(F("num_scores: ")); Serial.println(num_scores);
+	// Serial.println(F("num_scores retrieved!"));
+	// Serial.print(F("num_scores: ")); Serial.println(num_scores);
 }
 
 // Print highscore table to serial-monitor

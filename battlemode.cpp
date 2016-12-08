@@ -1,7 +1,8 @@
 #include "battlemode.h"
 
 // Dirty hacks to get rid of compiler errors
-extern Adafruit_ST7735 tft; // Defined in "pixelmon_adv.cpp"
+// All extern variables defined in "pixelmon_adv.cpp"
+extern Adafruit_ST7735 tft;
 extern pixelmon ownedPixelmon[];
 extern int num_pxm_owned;
 extern int scanJoystick(int* selection, uint8_t game_mode, uint8_t max_selection);
@@ -606,9 +607,9 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm, player *current_player
 				erasePixelmon(wild_pxm_x, wild_pxm_y, ST7735_BLACK);
 				delay(500);
 				int capture_threshold = 100 - map(wild_pxm->health, 0, wild_pxm_max_health, 0, 100);
-				Serial.print("capture_threshold: "); Serial.println(capture_threshold);
+				// Serial.print("capture_threshold: "); Serial.println(capture_threshold);
 				int capture_probability = random(101);
-				Serial.print("capture_probability: "); Serial.println(capture_probability);
+				// Serial.print("capture_probability: "); Serial.println(capture_probability);
 				capture = capture_probability <= capture_threshold;
 				if (capture) {
 					sprintf(message, "You captured wild %s!", allPixelmon[wild_pxm->pixelmon_id].name);
@@ -662,8 +663,8 @@ void battleMode(pixelmon *player_pxm, pixelmon *wild_pxm, player *current_player
         updatePixelmon(player_pxm_x, player_pxm_y, player_pxm, last_player_pxm, isEnemy);
 			}
 			current_player->score += 1;
-			Serial.println("score up 1");
-			Serial.println(current_player->score);
+			// Serial.println("score up 1");
+			// Serial.println(current_player->score);
 			sprintf(message, "You score went up by 1! Your new score is %d.", current_player->score);
 			showMessage(message);
 			eraseMenu();

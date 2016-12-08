@@ -221,18 +221,18 @@ int main() {
 	int battleConfirm = 0;
 	const char *PVPYESNO[] = {"YES", "NO"};
 
-	for (int i = 0; i < MAX_OWNED - 1; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
 		// this line is for testing; causes all pixelmon health except last to go to 0
-		if ( i != MAX_OWNED - 2) {
-			ownedPixelmon[i].health = 0;
-		}
-		printPixelmon(&ownedPixelmon[i]);
+		// if ( i != MAX_OWNED - 2) {
+		// 	ownedPixelmon[i].health = 0;
+		// }
+		// printPixelmon(&ownedPixelmon[i]);
 	}
-	ownedPixelmon[4].pixelmon_id = 1;
-	ownedPixelmon[4].health = 1;
-	Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
+	// ownedPixelmon[4].pixelmon_id = 1;
+	// ownedPixelmon[4].health = 1;
+	// Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
 
 	long startTime = millis();
 	while (true) {
@@ -262,9 +262,9 @@ int main() {
 			encounter_wild_pixelmon = false;
 			updateMap();
 			updateScreen();
-			Serial.print(F("Current score: ")); Serial.println(current_player.score);
-			Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
-			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
+			// Serial.print(F("Current score: ")); Serial.println(current_player.score);
+			// Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
+			// for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
 			startTime = millis();
 		} else { // map mode
 			uint8_t game_mode = 0;
