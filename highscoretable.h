@@ -29,7 +29,7 @@ void getNumScores();
 void tableToSerial();
 
 // Append player name and score to table
-void playerToTable(player* current_player);
+void playerToEEPROM(player* current_player);
 
 // Retrieves player name from serial monitor
 void getPlayerName(player *current_player);

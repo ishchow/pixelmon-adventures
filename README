@@ -27,6 +27,7 @@ Arduino GND <--> Bread Board Negative Bus <--> Adafruit GND
 Arduino GND <--> Bread Board Negative Bus <--> Joystick GND
 Arduino Analog Pin 0 <--> Joystick VERT
 Arduino Analog Pin 1 <--> Joystick HORZ
+Arduino Digital Pin 2 <--> Resistor(any) <--> Bread Board Negative Bus
 Arduino Digital Pin 5 <--> Adafruit SD_CS
 Arduino Digital Pin 6 <--> Adafruit TFT_CS
 Arduino Digital Pin 7 <--> Adafruit D/C
@@ -37,6 +38,8 @@ Arduino Digital Pin 51 <--> Adafruit MOSI
 Arduino Digital Pin 52 <--> Adafruit SCK
 
 IMPORTANT - this part is for two Arduinos (named Arduino 1 and Arduino 2)
+Arduino 1 Digital Pin 2 <--> Resistor(any) <--> Bread Board Positive Bus
+Arduino 2 Digital Pin 2 <--> Resistor(any) <--> Bread Board Positive Bus
 Arduino 1 Digital Pin 13 <--> Resistor(any) <--> Bread Board Positive Bus <--> 5V
 Arduino 2 Digital Pin 13 <--> Resistor(any) <--> Bread Board Negative Bus <--> GND
 +Arduino 1 TX3 <--> Arduino 2 RX3

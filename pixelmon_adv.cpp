@@ -3,15 +3,15 @@
 #include <Adafruit_ST7735.h> // Hardware-specific library
 #include <SPI.h>
 #include <SD.h>
-#include <EEPROM.h>
-
-#include "lcd_image.h"
 #include <avr/pgmspace.h> // For PROGMEM and F()
+
+#include "EEPROM.h"
+#include "ArduinoExtras.h"
+#include "lcd_image.h"
 #include "pixelmondata.h" //loads pixelmon data types and data
 #include "battlemode.h" //pixelmon stats, battlemode, menus
 #include "pvpbattle.h" // for pvp pixelmon battles
 #include "highscoretable.h" // for high score table
-#include "ArduinoExtras.h"
 
 // Display pins:
 // standard U of A library settings, assuming Atmel Mega SPI pins
@@ -66,7 +66,7 @@ bool update = false;
 // If true, used to enter battle mode
 bool encounter_wild_pixelmon = 0;
 
-extern pixelmon_type allPixelmon[];
+extern pixelmon_type allPixelmon[]; // defined in "pixelmondata.cpp"
 
 int num_pxm_owned = 1; // 1 <= pxm_owned <= MAX_OWNED
 pixelmon ownedPixelmon[MAX_OWNED];
@@ -186,14 +186,11 @@ void setup() {
 	Serial.print(F("Size of allPixelmon: ")); Serial.println(sizeof(pixelmon_type)*NUM_PIXELMON_TYPES);
 	getNumScores();
 
-	// generateTable(50, true);
+	// For testing the highscore table
+	// generateTable(10, true);
 	// tableToSerial();
-	// Serial.println("\n\n\n");
-	// highscoreTableToTFT();
-	tableToSerial();
 	// highscoreTableToTFT();
 	// while(true) {}
-
 }
 
 int main() {
@@ -224,30 +221,36 @@ int main() {
 	int battleConfirm = 0;
 	const char *PVPYESNO[] = {"YES", "NO"};
 
-	for (int i = 0; i < MAX_OWNED - 1; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		generatePixelmon(&ownedPixelmon[i]);
 		num_pxm_owned = i + 1;
 		// this line is for testing; causes all pixelmon health except last to go to 0
 		// if ( i != MAX_OWNED - 2) {
 		// 	ownedPixelmon[i].health = 0;
 		// }
-		printPixelmon(&ownedPixelmon[i]);
+		// printPixelmon(&ownedPixelmon[i]);
 	}
 	// ownedPixelmon[4].pixelmon_id = 1;
 	// ownedPixelmon[4].health = 1;
-	Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
+	// Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
 
 	long startTime = millis();
 	while (true) {
 		if (allOwnedPixelmonDead()) {
 			tft.fillScreen(ST7735_BLACK);
 			tft.setTextSize(1);
-			tft.setCursor(0,0);
+			tft.setCursor((TFT_WIDTH-6*strlen("GAME OVER"))/2, TFT_HEIGHT/2);
 			tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
 			tft.print(F("GAME OVER"));
+			tft.setCursor((TFT_WIDTH-6*strlen("GAME OVER"))/2, TFT_HEIGHT/2 + 1*8);
+			tft.print(F("Name: ")); tft.print(current_player.name); tft.print(F("\n"));
+			tft.setCursor((TFT_WIDTH-6*strlen("GAME OVER"))/2, TFT_HEIGHT/2 + 2*8);
+			tft.print(F("Score: ")); tft.print(current_player.score);
+			delay(2500);
 			if (strcmp(current_player.name, "") != 0) { // Player actually enters a name
-				playerToTable(&current_player);
+				playerToEEPROM(&current_player);
 			}
+			tft.fillScreen(ST7735_BLACK);
 			highscoreTableToTFT();
 			break;
 		}
@@ -259,9 +262,9 @@ int main() {
 			encounter_wild_pixelmon = false;
 			updateMap();
 			updateScreen();
-			Serial.print(F("Current score: ")); Serial.println(current_player.score);
-			Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
-			for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
+			// Serial.print(F("Current score: ")); Serial.println(current_player.score);
+			// Serial.print(F("num_pxm_owned: ")); Serial.println(num_pxm_owned);
+			// for (int i = 0; i < num_pxm_owned; ++i) printPixelmon(&ownedPixelmon[i]);
 			startTime = millis();
 		} else { // map mode
 			uint8_t game_mode = 0;
